@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  venda: one
+  estoque_de_produto: one
+  quantidade: 1
+  valor_unitario: 9.99
+  desconto: 9.99
+  valor_total: 9.99
+
+two:
+  venda: two
+  estoque_de_produto: two
+  quantidade: 1
+  valor_unitario: 9.99
+  desconto: 9.99
+  valor_total: 9.99

@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  informacao_loja: one
+  cliente: one
+  data_venda: 2025-04-06 07:19:22
+  valor_total: 9.99
+  desconto: 9.99
+  status: MyString
+  forma_pagamento: MyString
+  usuario: one
+  observacoes: MyText
+
+two:
+  informacao_loja: two
+  cliente: two
+  data_venda: 2025-04-06 07:19:22
+  valor_total: 9.99
+  desconto: 9.99
+  status: MyString
+  forma_pagamento: MyString
+  usuario: two
+  observacoes: MyText

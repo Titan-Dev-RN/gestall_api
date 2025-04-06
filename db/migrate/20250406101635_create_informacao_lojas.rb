@@ -1,6 +1,6 @@
-class CreateLojas < ActiveRecord::Migration[8.0]
+class CreateInformacaoLojas < ActiveRecord::Migration[8.0]
   def change
-    create_table :lojas do |t|
+    create_table :informacao_lojas do |t|
       t.string :nome_da_loja
       t.string :nome_dono
       t.string :forma_de_pagamento
@@ -13,7 +13,7 @@ class CreateLojas < ActiveRecord::Migration[8.0]
       t.string :email
       t.string :plano_contratado
       t.date :data_vencimento_plano
-      t.boolean :ativo
+      t.boolean :ativo, default: true
       t.string :token_integracao
       t.jsonb :configuracoes
 

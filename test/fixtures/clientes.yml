@@ -3,19 +3,17 @@
 one:
   informacao_loja: one
   nome: MyString
-  cnpj: MyString
-  contato: MyString
+  cpf_cnpj: MyString
   telefone: MyString
   email: MyString
   endereco: MyText
-  observacoes: MyText
+  data_cadastro: 2025-04-06 07:19:13
 
 two:
   informacao_loja: two
   nome: MyString
-  cnpj: MyString
-  contato: MyString
+  cpf_cnpj: MyString
   telefone: MyString
   email: MyString
   endereco: MyText
-  observacoes: MyText
+  data_cadastro: 2025-04-06 07:19:13

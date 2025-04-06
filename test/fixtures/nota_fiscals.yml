@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  venda: one
+  informacao_loja: one
+  numero: MyString
+  serie: MyString
+  chave_acesso: MyString
+  data_emissao: 2025-04-06 07:19:46
+  xml: MyText
+  status: MyString
+  motivo_cancelamento: MyText
+
+two:
+  venda: two
+  informacao_loja: two
+  numero: MyString
+  serie: MyString
+  chave_acesso: MyString
+  data_emissao: 2025-04-06 07:19:46
+  xml: MyText
+  status: MyString
+  motivo_cancelamento: MyText

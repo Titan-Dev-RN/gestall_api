@@ -1,0 +1,41 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  informacao_loja: one
+  nome_do_produto: MyString
+  categoria_do_produto: MyString
+  tipo_do_produto: MyString
+  quantidade_em_estoque: 1
+  quantidade_minima: 1
+  quantidade_maxima: 1
+  preco_de_venda: 9.99
+  ultima_atualizacao: 2025-04-06 07:18:36
+  data_de_entrada: 2025-04-06 07:18:36
+  data_de_cadastro: 2025-04-06 07:18:36
+  codigo_barras: MyString
+  codigo_interno: MyString
+  unidade_medida: MyString
+  peso: 9.99
+  marca: MyString
+  fornecedor: one
+  ativo: false
+
+two:
+  informacao_loja: two
+  nome_do_produto: MyString
+  categoria_do_produto: MyString
+  tipo_do_produto: MyString
+  quantidade_em_estoque: 1
+  quantidade_minima: 1
+  quantidade_maxima: 1
+  preco_de_venda: 9.99
+  ultima_atualizacao: 2025-04-06 07:18:36
+  data_de_entrada: 2025-04-06 07:18:36
+  data_de_cadastro: 2025-04-06 07:18:36
+  codigo_barras: MyString
+  codigo_interno: MyString
+  unidade_medida: MyString
+  peso: 9.99
+  marca: MyString
+  fornecedor: two
+  ativo: false

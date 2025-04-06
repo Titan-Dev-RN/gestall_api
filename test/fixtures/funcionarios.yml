@@ -1,0 +1,37 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  informacao_loja: one
+  usuario: one
+  nome: MyString
+  cpf: MyString
+  rg: MyString
+  data_nascimento: 2025-04-06
+  cargo: MyString
+  salario_base: 9.99
+  comissao_percentual: 9.99
+  data_admissao: 2025-04-06
+  data_demissao: 2025-04-06
+  endereco: MyText
+  telefone: MyString
+  email: MyString
+  ativo: false
+  observacoes: MyText
+
+two:
+  informacao_loja: two
+  usuario: two
+  nome: MyString
+  cpf: MyString
+  rg: MyString
+  data_nascimento: 2025-04-06
+  cargo: MyString
+  salario_base: 9.99
+  comissao_percentual: 9.99
+  data_admissao: 2025-04-06
+  data_demissao: 2025-04-06
+  endereco: MyText
+  telefone: MyString
+  email: MyString
+  ativo: false
+  observacoes: MyText
