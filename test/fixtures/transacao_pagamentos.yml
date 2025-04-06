@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  assinatura: one
+  valor: 9.99
+  data_transacao: 2025-04-05 23:34:15
+  status: MyString
+  metodo_pagamento: MyString
+  codigo_transacao: MyString
+  descricao: MyText
+
+two:
+  assinatura: two
+  valor: 9.99
+  data_transacao: 2025-04-05 23:34:15
+  status: MyString
+  metodo_pagamento: MyString
+  codigo_transacao: MyString
+  descricao: MyText

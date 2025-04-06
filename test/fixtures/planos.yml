@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  nome: MyString
+  descricao: MyText
+  valor_mensal: 9.99
+  recursos: MyText
+
+two:
+  nome: MyString
+  descricao: MyText
+  valor_mensal: 9.99
+  recursos: MyText

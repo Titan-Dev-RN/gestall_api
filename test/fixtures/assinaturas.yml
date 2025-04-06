@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  loja: one
+  plano: one
+  data_inicio: 2025-04-05
+  data_vencimento: 2025-04-05
+  status: MyString
+  gateway_pagamento: MyString
+  id_externo_gateway: MyString
+
+two:
+  loja: two
+  plano: two
+  data_inicio: 2025-04-05
+  data_vencimento: 2025-04-05
+  status: MyString
+  gateway_pagamento: MyString
+  id_externo_gateway: MyString

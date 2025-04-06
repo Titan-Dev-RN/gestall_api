@@ -1,0 +1,2 @@
+class Plano < ApplicationRecord
+end

@@ -1,0 +1,35 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  nome_da_loja: MyString
+  nome_dono: MyString
+  forma_de_pagamento: MyString
+  endereco: MyString
+  cidade: MyString
+  estado: MyString
+  data_de_entrada: 2025-04-05 23:33:58
+  cnpj: MyString
+  telefone: MyString
+  email: MyString
+  plano_contratado: MyString
+  data_vencimento_plano: 2025-04-05
+  ativo: false
+  token_integracao: MyString
+  configuracoes: 
+
+two:
+  nome_da_loja: MyString
+  nome_dono: MyString
+  forma_de_pagamento: MyString
+  endereco: MyString
+  cidade: MyString
+  estado: MyString
+  data_de_entrada: 2025-04-05 23:33:58
+  cnpj: MyString
+  telefone: MyString
+  email: MyString
+  plano_contratado: MyString
+  data_vencimento_plano: 2025-04-05
+  ativo: false
+  token_integracao: MyString
+  configuracoes: 
