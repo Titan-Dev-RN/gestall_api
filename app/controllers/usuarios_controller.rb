@@ -1,4 +1,10 @@
 class UsuariosController < ApplicationController
+
+    def index
+      @usuarios = Usuario.all
+      render json: @usuarios, status: :ok
+    end
+    
     def create
       @usuario = Usuario.new(usuario_params)
       if @usuario.save
