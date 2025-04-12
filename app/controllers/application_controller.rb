@@ -2,7 +2,7 @@ class ApplicationController < ActionController::API
     include ActionController::MimeResponds
   
     before_action :set_default_format
-    before_action :verificar_plano_ativo
+    #before_action :verificar_plano_ativo
 
 
     def verificar_plano_ativo

@@ -1,8 +1,18 @@
 class Usuarios::SessionsController < Devise::SessionsController
     respond_to :json
+
+    def create
+      super do |usuario|
+        token = request.env['warden-jwt_auth.token']
+        render json: {
+          usuario: usuario,
+          token: token
+        } and return
+      end
+    end
   
     private
-  
+
     def respond_with(resource, _opts = {})
       render json: {
         message: 'Login realizado com sucesso!',
