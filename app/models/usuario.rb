@@ -16,5 +16,11 @@ class Usuario < ApplicationRecord
     admin_loja: 1, 
     funcionario: 2
   }, default: :funcionario
+  def admin_loja?
+    tipo_acesso == 'admin_loja'
+  end
 
+  def funcionario?
+    tipo_acesso == 'funcionario'
+  end
 end

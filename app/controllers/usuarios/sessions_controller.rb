@@ -1,42 +1,46 @@
 class Usuarios::SessionsController < Devise::SessionsController
-    respond_to :json
-
-    def create
-      super do |usuario|
-        token = request.env['warden-jwt_auth.token']
-        render json: {
-          usuario: usuario,
-          token: token
-        } and return
-      end
-    end
-  
-    private
-
-    def respond_with(resource, _opts = {})
+  skip_before_action :verify_authenticity_token
+  respond_to :json
+  def create
+    user = Usuario.find_for_database_authentication(email: params[:usuario][:email])
+    
+    if user&.valid_password?(params[:usuario][:password])
+     
+      token = generate_jwt_token(user)
+      
       render json: {
-        message: 'Login realizado com sucesso!',
-        usuario: current_usuario,
-        token: request.env['warden-jwt_auth.token']
+        status: 'success',
+        usuario: {
+          id: user.id,
+          email: user.email,
+          tipo_acesso: user.tipo_acesso
+        },
+        token: token
       }, status: :ok
-    end
-  
-    def respond_to_on_destroy
-      jwt_payload = JWT.decode(
-        request.headers['Authorization'].split(' ').last,
-        Rails.application.credentials.jwt_secret_key,
-        true,
-        algorithm: 'HS256'
-      )
-      current_usuario = Usuario.find(jwt_payload[0]['sub'])
-  
-      if current_usuario
-        render json: { message: "Logout realizado com sucesso!" }, status: :ok
-      else
-        render json: { message: "Falha ao realizar logout" }, status: :unauthorized
-      end
-    rescue
-      render json: { message: "Token inválido" }, status: :unauthorized
+    else
+      render json: { error: 'Email ou senha inválidos' }, status: :unauthorized
     end
   end
-  
+
+  private
+
+  def generate_jwt_token(user)
+    payload = {
+      sub: user.id,
+      exp: 24.hours.from_now.to_i,
+      jti: SecureRandom.uuid,
+      user_data: {
+        email: user.email,
+        tipo_acesso: user.tipo_acesso
+      }
+    }
+    
+    # Verificação extrema da chave
+    raise "Chave JWT_SECRET_KEY ausente!" unless ENV['JWT_SECRET_KEY'].present?
+    
+    JWT.encode(payload, ENV['JWT_SECRET_KEY'], 'HS256')
+  rescue => e
+    Rails.logger.error "🔥 ERRO NA GERAÇÃO DO TOKEN: #{e.message}"
+    raise
+  end
+end
