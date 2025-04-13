@@ -12,15 +12,15 @@ class Usuario < ApplicationRecord
   has_many :historicos_estoque, foreign_key: 'id_usuario'
 
   enum :tipo_acesso, {
-    super_admin: 0,
-    admin_loja: 1, 
-    funcionario: 2
+    super_admin: "super_admin",
+    admin_loja: "admin_loja", 
+    funcionario: "funcionario"
   }, default: :funcionario
   def admin_loja?
-    tipo_acesso == 'admin_loja'
+    tipo_acesso == 1
   end
 
   def funcionario?
-    tipo_acesso == 'funcionario'
+    tipo_acesso == 2
   end
 end

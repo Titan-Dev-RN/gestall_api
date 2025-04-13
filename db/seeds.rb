@@ -51,21 +51,25 @@ puts "Criando usuários..."
 
 # Verifique como seu modelo Usuario espera a senha (adaptar conforme necessário)
 admin = Usuario.create!(
+  nome: "Admin Loja",
   email: "admin@loja.com",
-  password: "senha123",               # Se usar has_secure_password
-  password_confirmation: "senha123",  # Se usar confirmação
-  id_loja: loja.id,        # Garantir que está usando o nome correto da coluna
+  password: "senha123",
+  password_confirmation: "senha123", 
+  id_loja: loja.id,
   tipo_acesso: "admin_loja",
-  ativo: true
+  ativo: true,
+  role: "admin"
 )
 
 vendedor = Usuario.create!(
+  nome: "Carlos Vendedor",
   email: "vendedor@loja.com",
   password: "senha123",
   password_confirmation: "senha123",
   id_loja: loja.id,
   tipo_acesso: "funcionario",
-  ativo: true
+  ativo: true,
+  role: "vendedor" 
 )
 
 # 5. Criar Funcionário (Vendedor)
