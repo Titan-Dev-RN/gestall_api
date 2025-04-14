@@ -31,6 +31,13 @@ bundle install
 yarn install
 ```
 
+- caso não der certo tente:
+```bash
+sudo apt install -y libpq-dev
+bundle install
+yarn install
+```
+
 3. **Configure o banco de dados:**
 
 ```bash
