@@ -80,6 +80,7 @@ GEM
     ast (2.4.3)
     base64 (0.2.0)
     bcrypt (3.1.20)
+    bcrypt_pbkdf (1.1.1)
     bcrypt_pbkdf (1.1.1-x64-mingw-ucrt)
     benchmark (0.4.0)
     bigdecimal (3.1.9)
@@ -107,9 +108,9 @@ GEM
     devise-jwt (0.12.1)
       devise (~> 4.0)
       warden-jwt_auth (~> 0.10)
-    dotenv (3.1.7)
-    dotenv-rails (3.1.7)
-      dotenv (= 3.1.7)
+    dotenv (3.1.8)
+    dotenv-rails (3.1.8)
+      dotenv (= 3.1.8)
       railties (>= 6.1)
     drb (2.2.1)
     dry-auto_inject (1.1.0)
@@ -193,12 +194,15 @@ GEM
     nio4r (2.7.4)
     nokogiri (1.18.7-x64-mingw-ucrt)
       racc (~> 1.4)
+    nokogiri (1.18.7-x86_64-linux-gnu)
+      racc (~> 1.4)
     orm_adapter (0.5.0)
     ostruct (0.6.1)
     parallel (1.26.3)
     parser (3.3.7.4)
       ast (~> 2.4.1)
       racc
+    pg (1.5.9)
     pg (1.5.9-x64-mingw-ucrt)
     pp (0.6.2)
       prettyprint
@@ -213,7 +217,7 @@ GEM
       activesupport (>= 3.0.0)
     raabro (1.4.0)
     racc (1.8.1)
-    rack (3.1.12)
+    rack (3.1.13)
     rack-cors (2.0.2)
       rack (>= 2.0.0)
     rack-session (2.1.0)
@@ -343,6 +347,7 @@ GEM
 
 PLATFORMS
   x64-mingw-ucrt
+  x86_64-linux
 
 DEPENDENCIES
   active_model_serializers
