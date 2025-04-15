@@ -112,7 +112,7 @@ POST /login
 ```json
 {
   "usuario": {
-    "email": "admin@email.com",
+    "email": "admin@loja.com",
     "password": "senha123"
   }
 }
@@ -121,25 +121,57 @@ POST /login
 ## ✉️ produtos 
 
 **Endpoint:**
-
+LISTAR
 ```
-GET /produtos
+GET /api/v1/produtos/
 ```
-
-**Header (JSON):**
-AUTH
-Bearer <token>
-
-**Body (JSON):**
-
+DESATIVAR
+```
+DELETE /api/v1/produtos/1
+```
+REGISTAR
+```
+POST /api/v1/produtos
+```
 ```json
 {
-  "usuario": {
-    "email": "admin@email.com",
-    "password": "senha123"
-  }
+    "produto": {
+      "nome_do_produto": "Lightweight Bronze Wallet",
+      "categoria_do_produto": "Esportes",
+      "tipo_do_produto": "Unidade",
+      "quantidade_em_estoque": 87,
+      "quantidade_minima": 5,
+      "quantidade_maxima": 150,
+      "preco_de_venda": 118.89,
+      "codigo_barras": "8205913537519",
+      "codigo_interno": "PROD1000",
+      "unidade_medida": "LT",
+      "peso": 8.0,
+      "marca": "Monteiro-Ribeira",
+      "fornecedor_id": 3,
+      "ativo": true
+    }
 }
 ```
+ATUALIZAR
+```
+PUT /api/v1/produtos/1
+```
+```json
+{
+    "produto": {
+      "nome_do_produto": "Incredible Linen Car (Updated)",
+      "categoria_do_produto": "Automóveis",
+      "quantidade_em_estoque": 30,
+      "preco_de_venda": 19.99,
+      "marca": "da Rosa & Cia Ltda",
+      "ativo": false
+    }
+}
+```
+**Header (JSON):**
+AUTH
+Bearer token
 
 ---
 

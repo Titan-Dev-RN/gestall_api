@@ -14,7 +14,7 @@ class Api::V1::ProdutosController < ApplicationController
     end
     # POST /api/v1/produtos
     def create
-      @produto = current_loja.estoque_de_produtos.new(produto_params)
+      @produto = current_loja.estoque_produtos.new(produto_params)
       
       if @produto.save
         render json: @produto, status: :created
@@ -40,7 +40,7 @@ class Api::V1::ProdutosController < ApplicationController
   
     # GET /api/v1/produtos/baixo_estoque
     def baixo_estoque
-      @produtos = current_loja.estoque_de_produtos
+      @produtos = current_loja.estoque_produtos
                             .where('quantidade_em_estoque < quantidade_minima')
       render json: @produtos
     end
@@ -48,12 +48,12 @@ class Api::V1::ProdutosController < ApplicationController
     private
     def authorize_loja_admin
         unless @current_user.admin_loja? && @current_user.informacao_loja == @produto.informacao_loja
-          user_not_authorized
+          @user_not_authorized
         end
     end
 
     def set_produto
-      @produto = current_loja.estoque_de_produtos.find(params[:id])
+      @produto = current_loja.estoque_produtos.find(params[:id])
     end
   
     def produto_params
