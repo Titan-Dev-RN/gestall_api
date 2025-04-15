@@ -73,5 +73,4 @@ class ApplicationController < ActionController::API
   def auth_whitelist?
     controller_name == 'sessions' && action_name == 'create'
   end
-  # ... outros métodos ...
 end

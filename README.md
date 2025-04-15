@@ -104,8 +104,31 @@ POST /usuarios
 **Endpoint:**
 
 ```
-POST /usuarios/sign_in
+POST /login
 ```
+
+**Body (JSON):**
+
+```json
+{
+  "usuario": {
+    "email": "admin@email.com",
+    "password": "senha123"
+  }
+}
+```
+
+## ✉️ produtos 
+
+**Endpoint:**
+
+```
+GET /produtos
+```
+
+**Header (JSON):**
+AUTH
+Bearer <token>
 
 **Body (JSON):**
 

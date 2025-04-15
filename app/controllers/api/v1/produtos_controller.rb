@@ -2,14 +2,16 @@ class Api::V1::ProdutosController < ApplicationController
     before_action :authorize_loja_admin, only: [:create, :update, :destroy]
 
     before_action :set_produto, only: [:show, :update, :destroy]
-    before_action :authenticate_user!
-
+    
     # GET /api/v1/produtos
     def index
-      @produtos = current_loja.estoque_de_produtos
+      @produtos = current_loja.estoque_produtos
       render json: @produtos
     end
-  
+    
+    def show
+      render json: @produto
+    end
     # POST /api/v1/produtos
     def create
       @produto = current_loja.estoque_de_produtos.new(produto_params)
@@ -45,7 +47,7 @@ class Api::V1::ProdutosController < ApplicationController
   
     private
     def authorize_loja_admin
-        unless current_user.admin_loja? && current_user.informacao_loja == @produto.informacao_loja
+        unless @current_user.admin_loja? && @current_user.informacao_loja == @produto.informacao_loja
           user_not_authorized
         end
     end
@@ -64,6 +66,6 @@ class Api::V1::ProdutosController < ApplicationController
     end
   
     def current_loja
-      current_user.informacao_loja
+      @current_user.informacao_loja
     end
   end

@@ -16,6 +16,12 @@ class Usuario < ApplicationRecord
     admin_loja: "admin_loja", 
     funcionario: "funcionario"
   }, default: :funcionario
+
+  def informacao_loja
+    
+    InformacaoLoja.find_by(id: id_loja)
+    
+  end
   def admin_loja?
     tipo_acesso == 1
   end
