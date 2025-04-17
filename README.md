@@ -28,7 +28,6 @@ cd seu-repositorio
 
 ```bash
 bundle install
-yarn install
 ```
 
 - caso não der certo tente:
@@ -48,19 +47,19 @@ rails db:setup
 # rails db:seed (se houver seeds)
 ```
 
-4. **(Opcional) Configure as credenciais:**
+4. **Configure as credenciais:**
 
-Se estiver utilizando `Rails credentials`:
-
+Gere sua chave com 
 ```bash
-EDITOR="code --wait" rails credentials:edit
+rails secret
 ```
 
-Adicione, por exemplo:
+Crie e Adicione no .env nas variaveis:
 
 ```yaml
-devise:
-  jwt_secret_key: sua_chave_super_secreta
+JWT_KEY=
+JWT_SECRET=
+JWT_SECRET_KEY=
 ```
 
 5. **Inicie o servidor:**
@@ -73,7 +72,7 @@ Acesse a aplicação em [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📬 Criar um usuário admin via API (Postman ou similar)
+## 📬 Criar um usuário admin via API (Insomnia ou similar)
 
 **Endpoint:**
 
@@ -210,31 +209,5 @@ POST /api/v1/vendas/8/cancelar
 **Header (JSON):**
 AUTH
 Bearer token
-
----
-
-## 🛠 Ferramentas utilizadas
-
-- [Ruby on Rails](https://rubyonrails.org/)
-- [Devise](https://github.com/heartcombo/devise)
-- [BCrypt](https://github.com/codahale/bcrypt-ruby)
-- [Postman](https://www.postman.com/) (para testes de API)
-
----
-
-## 🔐 Níveis de Acesso
-
-O sistema diferencia usuários com base no atributo `role`, que pode ser:
-
-- `admin`
-- `gestor de RH`
-
----
-
-## 🗂 Organização do Projeto
-
-- `app/models/usuario.rb` – Modelo principal do Devise com atributos adicionais
-- `app/controllers/usuarios_controller.rb` – Controller para criação de usuários
-- `config/routes.rb` – Rotas customizadas com Devise
 
 ---
