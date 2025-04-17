@@ -1,7 +1,7 @@
 class Api::V1::ProdutosController < ApplicationController
     before_action :authorize_loja_admin, only: [:create, :update, :destroy]
 
-    before_action :set_produto, only: [:show, :update, :destroy]
+    before_action :set_produto, only: [:show, :update, :destroy, :reativar_produto]
     
     # GET /api/v1/produtos
     def index
@@ -36,6 +36,11 @@ class Api::V1::ProdutosController < ApplicationController
     def destroy
       @produto.update(ativo: false)
       render json: { message: 'Produto desativado com sucesso'}, status: :ok
+    end
+
+    def reativar_produto
+      @produto.update(ativo: true)
+      render json: { message: 'produto reativado com sucesso'}, status: :ok
     end
   
     # GET /api/v1/produtos/baixo_estoque

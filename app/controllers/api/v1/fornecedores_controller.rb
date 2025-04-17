@@ -1,7 +1,7 @@
 class Api::V1::FornecedoresController < ApplicationController
     before_action :authorize_loja_admin, only: [:index, :show, :create, :update, :destroy]
 
-    before_action :set_fornecedor, only: [:show, :update, :destroy]
+    before_action :set_fornecedor, only: [:show, :update, :destroy, :reativar_fornecedor]
   
     # GET /api/v1/fornecedores
     def index
@@ -40,6 +40,11 @@ class Api::V1::FornecedoresController < ApplicationController
       @fornecedor.update(ativo: false)
       render json: { message: 'Fornecedor desativado com sucesso'}, status: :ok
     end
+
+    def reativar_fornecedor
+        @fornecedor.update(ativo: true)
+        render json: { message: 'Fornecedor reativado com sucesso'}, status: :ok
+    end
   
     private
     def authorize_loja_admin
@@ -62,7 +67,7 @@ class Api::V1::FornecedoresController < ApplicationController
         :email,
         :endereco,
         :observacoes,
-        :status
+        :ativo
       )
     end
 end

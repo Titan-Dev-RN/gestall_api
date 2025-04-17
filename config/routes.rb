@@ -24,15 +24,26 @@ Rails.application.routes.draw do
       # Autenticação da API (usando sessions_controller)
       post 'login', to: 'sessions#create'
       delete 'logout', to: 'sessions#destroy'
-      resources :fornecedores, only: [:index, :show, :create, :update, :destroy]
+      resources :fornecedores, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          post 'reativar_fornecedor'
+        end
+      end
       # Rotas para o estoque (products_controller)
       resources :produtos, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          post 'reativar_produto'
+        end
         collection do
           get 'baixo_estoque'
           get 'por_categoria/:categoria', action: :por_categoria
         end
       end
-  
+      resources :clientes, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          post 'reativar_cliente'
+        end
+      end
       # Rotas para vendas (vendas_controller)
       resources :vendas, only: [:index, :show, :create] do
         collection do
