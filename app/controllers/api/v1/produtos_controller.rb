@@ -35,13 +35,12 @@ class Api::V1::ProdutosController < ApplicationController
     # DELETE /api/v1/produtos/1
     def destroy
       @produto.update(ativo: false)
-      render json: { message: 'Produto desativado com sucesso', nivel_permissao: @current_user.tipo_acesso }, status: :ok
+      render json: { message: 'Produto desativado com sucesso'}, status: :ok
     end
   
     # GET /api/v1/produtos/baixo_estoque
     def baixo_estoque
-      @produtos = current_loja.estoque_produtos
-                            .where('quantidade_em_estoque < quantidade_minima')
+      @produtos = current_loja.estoque_produtos.where('quantidade_em_estoque < quantidade_minima')
       render json: @produtos
     end
   

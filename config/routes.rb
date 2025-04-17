@@ -24,7 +24,7 @@ Rails.application.routes.draw do
       # Autenticação da API (usando sessions_controller)
       post 'login', to: 'sessions#create'
       delete 'logout', to: 'sessions#destroy'
-
+      resources :fornecedores, only: [:index, :show, :create, :update, :destroy]
       # Rotas para o estoque (products_controller)
       resources :produtos, only: [:index, :show, :create, :update, :destroy] do
         collection do
@@ -46,9 +46,6 @@ Rails.application.routes.draw do
         end
       end
   
-      # Relatórios (podem ficar no base_controller ou criar um relatorios_controller)
-      get 'relatorios/estoque', to: 'base#relatorio_estoque'
-      get 'relatorios/vendas', to: 'base#relatorio_vendas'
     end
   end
 end

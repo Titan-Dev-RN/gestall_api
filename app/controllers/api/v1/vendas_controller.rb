@@ -1,6 +1,6 @@
 class Api::V1::VendasController < ApplicationController
     before_action :authorize_vendedor
-    before_action :set_venda, only: [:adicionar_item, :remover_item, :finalizar, :cancelar]
+    before_action :set_venda, only: [:show, :adicionar_item, :remover_item, :finalizar, :cancelar]
   
     # GET /api/v1/vendas
     #exibe somente as vendas do usuario atual no momento
@@ -9,6 +9,9 @@ class Api::V1::VendasController < ApplicationController
       render json: @vendas, include: [:itens_venda, :cliente]
     end
     
+    def show
+      render json: @venda, include: [:itens_venda, :cliente]
+    end
     # GET /api/v1/vendas/vendas_all
     def index_all
       @vendas = Venda.where(informacao_loja_id: @current_user.informacao_loja.id)
