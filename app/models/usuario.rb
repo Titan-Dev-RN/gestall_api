@@ -8,8 +8,8 @@ class Usuario < ApplicationRecord
   
   has_many :usuarios_permissoes
   has_many :permissoes, through: :usuarios_permissoes
-  has_many :vendas, foreign_key: 'id_usuario'
-  has_many :historicos_estoque, foreign_key: 'id_usuario'
+  has_many :vendas, foreign_key: 'usuario_id'
+  has_many :historicos_estoque, foreign_key: 'usuario_id'
 
   enum :tipo_acesso, {
     super_admin: "super_admin",
@@ -28,6 +28,8 @@ class Usuario < ApplicationRecord
   end
 
   def funcionario?
+    puts "entrou no funcionario?"
+    puts "tipo_acesso: #{tipo_acesso}"
     tipo_acesso == "funcionario"
   end
 end

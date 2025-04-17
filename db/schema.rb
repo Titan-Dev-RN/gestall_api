@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_06_101958) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_17_113859) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -234,7 +234,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_06_101958) do
 
   create_table "vendas", force: :cascade do |t|
     t.bigint "informacao_loja_id", null: false
-    t.bigint "cliente_id", null: false
+    t.bigint "cliente_id"
     t.datetime "data_venda"
     t.decimal "valor_total"
     t.decimal "desconto"

@@ -35,9 +35,12 @@ Rails.application.routes.draw do
   
       # Rotas para vendas (vendas_controller)
       resources :vendas, only: [:index, :show, :create] do
+        collection do
+          get 'vendas_all', action: :index_all
+        end
         member do
           post 'adicionar_item'
-          delete 'remover_item/:item_id', action: :remover_item
+          delete 'remover_item/:item_id', to: 'vendas#remover_item'
           post 'finalizar'
           post 'cancelar'
         end
