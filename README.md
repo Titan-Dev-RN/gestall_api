@@ -169,6 +169,44 @@ PUT /api/v1/produtos/1
     }
 }
 ```
+
+## ✉️ Vendas 
+
+**Endpoint:**
+LISTAR
+```
+GET /api/v1/vendas/vendas_all
+```
+INICIAR
+```
+POST /api/v1/vendas
+```
+ADICIONAR ITEM
+```
+POST /api/v1/vendas/id/adicionar_item
+```
+```json
+{
+  "codigo_barras": "6460724085297",
+	"quantidade": 1,
+	"desconto": 10
+}
+```
+REMOVER ITEM
+```
+DELETE /api/v1/vendas/id/remover_item/id_item
+```
+
+FINALIZAR VENDA
+```
+POST /api/v1/vendas/id/finalizar
+```
+
+CANCELAR VENDA
+```
+POST /api/v1/vendas/8/cancelar
+```
+
 **Header (JSON):**
 AUTH
 Bearer token
