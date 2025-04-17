@@ -48,6 +48,11 @@ class Api::V1::VendasController < ApplicationController
     end
   
     private
+    def authorize_loja_admin
+      unless @current_user.admin_loja? && @current_user.informacao_loja
+          render json: { error: 'Acesso não autorizado' }, status: :forbidden
+      end
+    end
     
     def set_venda
       @venda = current_vendedor.vendas.find(params[:id])

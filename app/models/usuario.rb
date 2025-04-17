@@ -18,15 +18,16 @@ class Usuario < ApplicationRecord
   }, default: :funcionario
 
   def informacao_loja
-    
     InformacaoLoja.find_by(id: id_loja)
     
   end
   def admin_loja?
-    tipo_acesso == 1
+    puts "entrou no admin_loja?"
+    puts "tipo_acesso: #{tipo_acesso}"
+    tipo_acesso == "admin_loja"
   end
 
   def funcionario?
-    tipo_acesso == 2
+    tipo_acesso == "funcionario"
   end
 end

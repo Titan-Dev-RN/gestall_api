@@ -17,7 +17,7 @@ class Api::V1::ProdutosController < ApplicationController
       @produto = current_loja.estoque_produtos.new(produto_params)
       
       if @produto.save
-        render json: @produto, status: :created
+        render json: @produto.as_json.merge(nivel_permissao: @current_user.tipo_acesso), status: :created
       else
         render json: @produto.errors, status: :unprocessable_entity
       end
@@ -35,7 +35,7 @@ class Api::V1::ProdutosController < ApplicationController
     # DELETE /api/v1/produtos/1
     def destroy
       @produto.update(ativo: false)
-      head :no_content
+      render json: { message: 'Produto desativado com sucesso', nivel_permissao: @current_user.tipo_acesso }, status: :ok
     end
   
     # GET /api/v1/produtos/baixo_estoque
@@ -47,8 +47,8 @@ class Api::V1::ProdutosController < ApplicationController
   
     private
     def authorize_loja_admin
-        unless @current_user.admin_loja? && @current_user.informacao_loja == @produto.informacao_loja
-          @user_not_authorized
+        unless @current_user.admin_loja? && @current_user.informacao_loja
+            render json: { error: 'Acesso não autorizado' }, status: :forbidden
         end
     end
 
@@ -61,7 +61,7 @@ class Api::V1::ProdutosController < ApplicationController
         :nome_do_produto, :categoria_do_produto, :tipo_do_produto,
         :quantidade_em_estoque, :quantidade_minima, :quantidade_maxima,
         :preco_de_venda, :codigo_barras, :codigo_interno,
-        :unidade_medida, :peso, :marca, :fornecedor_id
+        :unidade_medida, :peso, :marca, :fornecedor_id, :ativo,
       )
     end
   
