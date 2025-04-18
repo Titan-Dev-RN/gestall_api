@@ -211,3 +211,66 @@ AUTH
 Bearer token
 
 ---
+
+## ✉️ Fornecedores
+
+**Endpoint:**
+REATIVAR FORNECEDOR
+```
+POST /api/v1/fornecedores/1/reativar_fornecedor
+```
+
+LISTAR
+```
+GET /api/v1/fornecedores/:id
+```
+```
+GET /api/v1/fornecedores
+```
+
+ATUALIZAR
+```
+PUT /api/v1/fornecedores/:id
+```
+```json
+{
+  "fornecedor": {
+    "nome": "Distribuidora Central",
+    "cnpj": "12.345.678/0001-90",
+    "contato": "João Silva",
+    "telefone": "(11) 91234-5678",
+    "email": "contato@distribuidoracentral.com.br",
+    "endereco": "Rua das Flores, 123 - São Paulo - SP",
+    "observacoes": "Entrega rápida e bons preços"
+  }
+}
+```
+
+CRIAR FORNECEDOR
+```
+POST /api/v1/fornecedores
+```
+```json
+{
+  "fornecedor": {
+    "nome": "Distribuidora Central da baixa d aegua",
+    "cnpj": "12.345.678/0001-90",
+    "contato": "João Silva",
+    "telefone": "(11) 91234-5678",
+    "email": "contato@distribuidoracentral.com.br",
+    "endereco": "Rua das Flores, 123 - São Paulo - SP",
+    "observacoes": "Entrega rápida e bons preços"
+  }
+}
+```
+
+REMOVER FORNECEDOR
+```
+DELETE /api/v1/fornecedores/:id
+```
+
+**Header (JSON):**
+AUTH
+Bearer token
+
+---
