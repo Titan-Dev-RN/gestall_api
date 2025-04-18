@@ -19,17 +19,13 @@ class Usuario < ApplicationRecord
 
   def informacao_loja
     InformacaoLoja.find_by(id: id_loja)
-    
   end
+
   def admin_loja?
-    puts "entrou no admin_loja?"
-    puts "tipo_acesso: #{tipo_acesso}"
     tipo_acesso == "admin_loja"
   end
 
   def funcionario?
-    puts "entrou no funcionario?"
-    puts "tipo_acesso: #{tipo_acesso}"
     tipo_acesso == "funcionario"
   end
 end

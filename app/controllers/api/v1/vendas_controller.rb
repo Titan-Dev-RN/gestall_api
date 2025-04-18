@@ -1,7 +1,7 @@
 class Api::V1::VendasController < ApplicationController
     before_action :authorize_vendedor
     before_action :set_venda, only: [:show, :adicionar_item, :remover_item, :finalizar, :cancelar]
-  
+    
     # GET /api/v1/vendas
     #exibe somente as vendas do usuario atual no momento
     def index
@@ -19,9 +19,9 @@ class Api::V1::VendasController < ApplicationController
     end
     # POST /api/v1/vendas
     def create
-      loja = current_vendedor.informacao_loja
+      loja = @current_user.informacao_loja
       
-      @venda = current_vendedor.vendas.new(
+      @venda = @current_user.vendas.new(
         cliente_id: params[:cliente_id],
         observacoes: params[:observacoes],
         forma_pagamento: params[:forma_pagamento],
@@ -43,7 +43,7 @@ class Api::V1::VendasController < ApplicationController
     def adicionar_item
       codigo_de_barras = params[:codigo_barras]
       
-      produto = current_vendedor.informacao_loja.estoque_produtos.find_by(codigo_barras: codigo_de_barras)
+      produto = @current_user.informacao_loja.estoque_produtos.find_by(codigo_barras: codigo_de_barras)
       
       unless produto
         render json: { error: 'Produto não encontrado no estoque' }, status: :not_found and return
@@ -116,8 +116,7 @@ class Api::V1::VendasController < ApplicationController
     end
 
     def set_venda
-      puts @current_user
-      @venda = current_vendedor.vendas.find(params[:id])
+      @venda = @current_user.vendas.find(params[:id])
     end
   
     def venda_params
@@ -125,14 +124,6 @@ class Api::V1::VendasController < ApplicationController
         :cliente_id, :valor_total, :forma_pagamento,
         itens_venda: [:produto_id, :quantidade, :preco_unitario]
       )
-    end
-  
-    def current_vendedor
-      if @current_user.funcionario? && @current_user.informacao_loja
-        @current_user
-      else
-        render json: { error: 'Acesso não autorizado usuario não é vendedor' }, status: :forbidden
-      end
     end
   
     def calcular_total
