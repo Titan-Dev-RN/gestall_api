@@ -42,31 +42,59 @@ class Api::V1::VendasController < ApplicationController
     # POST /api/v1/vendas/1/adicionar_item
     def adicionar_item
       codigo_de_barras = params[:codigo_barras]
-      
       produto = @current_user.informacao_loja.estoque_produtos.find_by(codigo_barras: codigo_de_barras)
-      
+    
       unless produto
         render json: { error: 'Produto não encontrado no estoque' }, status: :not_found and return
       end
     
-      quantidade = params[:quantidade].to_i
-      desconto = params[:desconto].to_f || 0.0
-      valor_unitario = produto.preco_de_venda
-      valor_total = (valor_unitario * quantidade) - desconto
+      # Verifica se o produto já existe na venda
+      item_existente = @venda.itens_venda.find_by(estoque_de_produto_id: produto.id)
     
-      @item = @venda.itens_venda.new(
-        estoque_de_produto_id: produto.id,
-        quantidade: quantidade,
-        valor_unitario: valor_unitario,
-        desconto: desconto,
-        valor_total: valor_total
-      )
-      
-      if @item.save
-        @venda.update(valor_total: calcular_total)
-        render json: @venda.reload, include: :itens_venda
+      if item_existente
+        # ATUALIZAÇÃO DE QUANTIDADE (PUT implícito)
+        nova_quantidade = params[:quantidade].to_i
+        desconto = params[:desconto].to_f || item_existente.desconto
+        
+        item_existente.update(
+          quantidade: nova_quantidade,
+          desconto: desconto,
+          valor_total: (produto.preco_de_venda * nova_quantidade) - desconto
+        )
+    
+        if item_existente.save
+          @venda.update(valor_total: calcular_total)
+          render json: { 
+            action: 'updated', 
+            venda: @venda.reload.as_json(include: :itens_venda) 
+          }
+        else
+          render json: item_existente.errors, status: :unprocessable_entity
+        end
       else
-        render json: @item.errors, status: :unprocessable_entity
+        # CRIAÇÃO DE NOVO ITEM (POST original)
+        quantidade = params[:quantidade].to_i
+        desconto = params[:desconto].to_f || 0.0
+        valor_unitario = produto.preco_de_venda
+        valor_total = (valor_unitario * quantidade) - desconto
+    
+        @item = @venda.itens_venda.new(
+          estoque_de_produto_id: produto.id,
+          quantidade: quantidade,
+          valor_unitario: valor_unitario,
+          desconto: desconto,
+          valor_total: valor_total
+        )
+    
+        if @item.save
+          @venda.update(valor_total: calcular_total)
+          render json: { 
+            action: 'created', 
+            venda: @venda.reload.as_json(include: :itens_venda) 
+          }
+        else
+          render json: @item.errors, status: :unprocessable_entity
+        end
       end
     end
     
