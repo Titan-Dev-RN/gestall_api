@@ -51,6 +51,7 @@ Rails.application.routes.draw do
         end
         member do
           post 'adicionar_item'
+          post 'aumentar_quantidade'
           delete 'remover_item/:item_id', to: 'vendas#remover_item'
           post 'finalizar'
           post 'cancelar'
