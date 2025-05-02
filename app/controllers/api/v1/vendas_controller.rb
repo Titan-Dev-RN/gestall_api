@@ -1,6 +1,12 @@
 class Api::V1::VendasController < ApplicationController
     before_action :authorize_vendedor
-    before_action :set_venda, only: [:show, :adicionar_item, :remover_item, :finalizar, :cancelar, :aumentar_quantidade]
+    before_action :set_venda, only: [:show, 
+    :adicionar_item, 
+    :remover_item, 
+    :finalizar, 
+    :cancelar, 
+    :aumentar_quantidade, 
+    :atualizar_desconto_item]
     
     # GET /api/v1/vendas
     #exibe somente as vendas do usuario atual no momento
@@ -97,7 +103,20 @@ class Api::V1::VendasController < ApplicationController
         end
       end
     end
-    
+    def atualizar_desconto_item
+      codigo_de_barras = params[:codigo_barras]
+      item = @venda.itens_venda.joins(:estoque_de_produto).find_by(estoque_de_produtos: { codigo_barras: codigo_de_barras })
+      unless item
+        render json: { error: 'Item não encontrado na venda' }, status: :not_found and return
+      end
+      novo_desconto = params[:desconto]
+      if item.update(desconto: novo_desconto)
+        @venda.update(valor_total: calcular_total)
+        render json: { message: 'Desconto atualizado com sucesso', venda: @venda.reload.as_json(include: :itens_venda) }, status: :ok
+      else
+        render json: item.errors, status: :unprocessable_entity
+      end
+    end
     def aumentar_quantidade
       codigo_de_barras = params[:codigo_barras]
       item = @venda.itens_venda.joins(:estoque_de_produto).find_by(estoque_de_produtos: { codigo_barras: codigo_de_barras })

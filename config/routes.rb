@@ -50,6 +50,7 @@ Rails.application.routes.draw do
           get 'vendas_all', action: :index_all
         end
         member do
+          post 'atualizar_desconto_item'
           post 'adicionar_item'
           post 'aumentar_quantidade'
           delete 'remover_item/:item_id', to: 'vendas#remover_item'
