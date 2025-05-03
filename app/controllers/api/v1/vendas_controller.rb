@@ -103,6 +103,7 @@ class Api::V1::VendasController < ApplicationController
         end
       end
     end
+
     def atualizar_desconto_item
       codigo_de_barras = params[:codigo_barras]
       item = @venda.itens_venda.joins(:estoque_de_produto).find_by(estoque_de_produtos: { codigo_barras: codigo_de_barras })
@@ -117,6 +118,7 @@ class Api::V1::VendasController < ApplicationController
         render json: item.errors, status: :unprocessable_entity
       end
     end
+
     def aumentar_quantidade
       codigo_de_barras = params[:codigo_barras]
       item = @venda.itens_venda.joins(:estoque_de_produto).find_by(estoque_de_produtos: { codigo_barras: codigo_de_barras })
@@ -154,9 +156,15 @@ class Api::V1::VendasController < ApplicationController
     
     # POST /api/v1/vendas/1/finalizar
     def finalizar
+      if params[:forma_pagamento] == nil
+        render json: { error: 'Forma de pagamento não informada' }, status: :unprocessable_entity and return
+      end
       @venda.valor_total = calcular_total
       @venda.status = 'finalizada'
-    
+      @venda.forma_pagamento = params[:forma_pagamento]
+      if params[:cliente] != nil
+        @venda.cliente = params[:cliente_id]
+      end
       if @venda.save
         atualizar_estoque
         render json: @venda
