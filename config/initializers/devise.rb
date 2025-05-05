@@ -20,7 +20,7 @@ Devise.setup do |config|
   # Configure the parent class to the devise controllers.
   # config.parent_controller = 'DeviseController'
   config.jwt do |jwt|
-    jwt.secret = ENV['JWT_SECRET'] || Rails.application.credentials.devise[:jwt_secret_key]
+    jwt.secret = ENV.fetch('JWT_SECRET') { SecureRandom.hex(32) }
     jwt.dispatch_requests = [['POST', %r{^/login$}]]
     jwt.revocation_requests = [['DELETE', %r{^/logout$}]]
     jwt.expiration_time = 1.day.to_i
