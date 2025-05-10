@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_17_221456) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_10_103955) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -26,6 +26,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_17_221456) do
     t.datetime "updated_at", null: false
     t.index ["informacao_loja_id"], name: "index_assinaturas_on_informacao_loja_id"
     t.index ["plano_id"], name: "index_assinaturas_on_plano_id"
+  end
+
+  create_table "categorias", force: :cascade do |t|
+    t.string "nome", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "clientes", force: :cascade do |t|
@@ -45,7 +51,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_17_221456) do
   create_table "estoque_de_produtos", force: :cascade do |t|
     t.bigint "informacao_loja_id", null: false
     t.string "nome_do_produto"
-    t.string "categoria_do_produto"
     t.string "tipo_do_produto"
     t.integer "quantidade_em_estoque"
     t.integer "quantidade_minima"
@@ -63,6 +68,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_17_221456) do
     t.boolean "ativo"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "categoria_do_produto"
     t.index ["fornecedor_id"], name: "index_estoque_de_produtos_on_fornecedor_id"
     t.index ["informacao_loja_id"], name: "index_estoque_de_produtos_on_informacao_loja_id"
   end
@@ -254,6 +260,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_17_221456) do
   add_foreign_key "assinaturas", "informacao_lojas"
   add_foreign_key "assinaturas", "planos"
   add_foreign_key "clientes", "informacao_lojas"
+  add_foreign_key "estoque_de_produtos", "categorias", column: "categoria_do_produto"
   add_foreign_key "estoque_de_produtos", "fornecedors"
   add_foreign_key "estoque_de_produtos", "informacao_lojas"
   add_foreign_key "fornecedors", "informacao_lojas"

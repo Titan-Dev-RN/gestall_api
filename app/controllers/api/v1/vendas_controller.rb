@@ -163,7 +163,7 @@ class Api::V1::VendasController < ApplicationController
       @venda.status = 'finalizada'
       @venda.forma_pagamento = params[:forma_pagamento]
       if params[:cliente] != nil
-        @venda.cliente = params[:cliente_id]
+        @venda.cliente_id = params[:cliente]
       end
       if @venda.save
         atualizar_estoque
@@ -195,6 +195,7 @@ class Api::V1::VendasController < ApplicationController
   
     def venda_params
       params.require(:venda).permit(
+        :cliente,
         :cliente_id, :valor_total, :forma_pagamento,
         itens_venda: [:produto_id, :quantidade, :preco_unitario]
       )
