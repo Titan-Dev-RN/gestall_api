@@ -108,17 +108,16 @@ rescue ActiveRecord::RecordNotUnique => e
   puts "CNPJ duplicado gerado: #{e.message}. Gerando novo..."
   retry
 end
-
+categoria = Categoria.create!(nome: "generico")
 # 7. Criar Produtos no Estoque
 puts "Criando produtos..."
 fornecedores = Fornecedor.all
-categorias = ["Eletrônicos", "Roupas", "Alimentos", "Casa", "Esportes"]
 
 15.times do |i|
   EstoqueDeProduto.create!(
     informacao_loja_id: loja.id,
     nome_do_produto: Faker::Commerce.product_name,
-    categoria_do_produto: categorias.sample,
+    categoria_do_produto: categoria.id,
     tipo_do_produto: ["Unidade", "Kg", "Litro", "Pacote"].sample,
     quantidade_em_estoque: Faker::Number.between(from: 10, to: 100),
     quantidade_minima: 5,
