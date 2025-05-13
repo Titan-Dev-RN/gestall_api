@@ -77,6 +77,8 @@ GEM
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
       uri (>= 0.13.1)
+    aitch (2.0.0)
+      nokogiri
     ast (2.4.3)
     base64 (0.2.0)
     bcrypt (3.1.20)
@@ -198,6 +200,11 @@ GEM
       racc (~> 1.4)
     orm_adapter (0.5.0)
     ostruct (0.6.1)
+    pagseguro-oficial (2.4.0)
+      aitch (>= 0.2.1)
+      i18n
+      json
+      nokogiri
     parallel (1.26.3)
     parser (3.3.7.4)
       ast (~> 2.4.1)
@@ -362,6 +369,7 @@ DEPENDENCIES
   faker (~> 3.2)
   httparty
   kamal
+  pagseguro-oficial (= 2.4.0)
   pg (~> 1.1)
   puma (>= 5.0)
   pundit
