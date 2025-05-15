@@ -4,12 +4,25 @@ class ApplicationController < ActionController::API
   
   before_action :set_default_format
   before_action :authenticate_api_request, unless: -> { auth_whitelist? }
-  
+  before_action :verificar_loja_ativa, unless: -> { auth_whitelist? }
+
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from ActiveRecord::RecordInvalid, with: :invalid_record
   rescue_from JWT::DecodeError, with: :invalid_token
 
+
   private
+  def verificar_loja_ativa
+    return unless @current_user
+
+    loja = InformacaoLoja.find_by(id: @current_user.id_loja)
+    unless loja
+      render json: { error: 'Loja não encontrada.' }, status: :not_found and return
+    end
+    unless loja.ativo
+      render json: { error: 'Loja inativa ou vencida. Regularize o pagamento.' }, status: :payment_required
+    end
+  end
 
   def set_default_format
     request.format = :json

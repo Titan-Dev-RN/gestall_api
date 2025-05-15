@@ -5,15 +5,16 @@ class Usuarios::SessionsController < Devise::SessionsController
     user = Usuario.find_for_database_authentication(email: params[:usuario][:email])
     
     if user&.valid_password?(params[:usuario][:password])
-     
+
       token = generate_jwt_token(user)
-      
+       
       render json: {
         status: 'success',
         usuario: {
           id: user.id,
           email: user.email,
-          tipo_acesso: user.tipo_acesso
+          tipo_acesso: user.tipo_acesso,
+          loja_ativa: loja_ativa?(user)
         },
         token: token
       }, status: :ok
@@ -23,6 +24,10 @@ class Usuarios::SessionsController < Devise::SessionsController
   end
 
   private
+  def loja_ativa?(user)
+    loja = InformacaoLoja.find_by(id: user.id_loja)
+    loja&.ativo
+  end
 
   def generate_jwt_token(user)
     payload = {
