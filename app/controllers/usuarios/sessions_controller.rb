@@ -45,7 +45,7 @@ class Usuarios::SessionsController < Devise::SessionsController
     
     JWT.encode(payload, ENV['JWT_SECRET_KEY'], 'HS256')
   rescue => e
-    Rails.logger.error "🔥 ERRO NA GERAÇÃO DO TOKEN: #{e.message}"
+    Rails.logger.error "ERRO NA GERAÇÃO DO TOKEN: #{e.message}"
     raise
   end
 end

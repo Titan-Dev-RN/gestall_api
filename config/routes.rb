@@ -18,10 +18,8 @@ Rails.application.routes.draw do
   # Rotas adicionais de usuários
   resources :usuarios, only: [:index, :create]
 
-  # Namespace para API
   namespace :api do
     namespace :v1 do
-      # Autenticação da API (usando sessions_controller)
       post 'login', to: 'sessions#create'
       delete 'logout', to: 'sessions#destroy'
       resources :fornecedores, only: [:index, :show, :create, :update, :destroy] do
@@ -29,7 +27,6 @@ Rails.application.routes.draw do
           post 'reativar_fornecedor'
         end
       end
-      # Rotas para o estoque (products_controller)
       resources :produtos, only: [:index, :show, :create, :update, :destroy] do
         member do
           post 'reativar_produto'
@@ -44,7 +41,6 @@ Rails.application.routes.draw do
           post 'reativar_cliente'
         end
       end
-      # Rotas para vendas (vendas_controller)
       resources :vendas, only: [:index, :show, :create] do
         collection do
           get 'vendas_all', action: :index_all
@@ -58,7 +54,8 @@ Rails.application.routes.draw do
           post 'cancelar'
         end
       end
-  
+      resources :funcionarios, only: [:index, :show, :create, :update, :destroy]
+      
     end
   end
 end

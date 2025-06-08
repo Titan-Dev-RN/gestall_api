@@ -190,7 +190,7 @@ class Api::V1::VendasController < ApplicationController
     end
 
     def set_venda
-      @venda = @current_user.vendas.find(params[:id])
+      @venda = @current_user.informacao_loja.vendas.find(params[:id])
     end
   
     def venda_params
