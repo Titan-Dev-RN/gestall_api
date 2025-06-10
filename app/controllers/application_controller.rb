@@ -10,10 +10,14 @@ class ApplicationController < ActionController::API
   rescue_from ActiveRecord::RecordInvalid, with: :invalid_record
   rescue_from JWT::DecodeError, with: :invalid_token
 
+  def current_tenant
+    @current_tenant ||= InformacaoLoja.find_by(id: @current_user.id_loja) if @current_user
+  end
 
   private
   def verificar_loja_ativa
     return unless @current_user
+    return if @current_user.super_admin?
 
     loja = InformacaoLoja.find_by(id: @current_user.id_loja)
     unless loja

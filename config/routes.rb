@@ -58,6 +58,11 @@ Rails.application.routes.draw do
       end
       resources :funcionarios, only: [:index, :show, :create, :update, :destroy]
       
+      resources :informacoes_lojas do
+        member do
+          post :reativar
+        end
+      end
     end
   end
 end
