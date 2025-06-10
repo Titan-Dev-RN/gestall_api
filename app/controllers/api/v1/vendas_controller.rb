@@ -54,11 +54,9 @@ class Api::V1::VendasController < ApplicationController
         render json: { error: 'Produto não encontrado no estoque' }, status: :not_found and return
       end
     
-      # Verifica se o produto já existe na venda
       item_existente = @venda.itens_venda.find_by(estoque_de_produto_id: produto.id)
     
       if item_existente
-        # ATUALIZAÇÃO DE QUANTIDADE (PUT implícito)
         nova_quantidade = params[:quantidade].to_i
         desconto = params[:desconto].to_f || item_existente.desconto
         
@@ -78,7 +76,6 @@ class Api::V1::VendasController < ApplicationController
           render json: item_existente.errors, status: :unprocessable_entity
         end
       else
-        # CRIAÇÃO DE NOVO ITEM (POST original)
         quantidade = params[:quantidade].to_i
         desconto = params[:desconto].to_f || 0.0
         valor_unitario = produto.preco_de_venda
@@ -210,6 +207,16 @@ class Api::V1::VendasController < ApplicationController
       @venda.itens_venda.each do |item|
         produto = item.estoque_de_produto
         produto.decrement!(:quantidade_em_estoque, item.quantidade)
+        
+        HistoricoEstoque.create(
+          estoque_de_produto_id: @produto.id,
+          informacao_loja_id: current_loja.id,
+          usuario_id: @current_user.id,
+          tipo_movimentacao: 'venda',
+          quantidade: item.quantidade,
+          data_movimentacao: Time.current,
+          observacao: "Venda ##{@venda.id} - #{item.quantidade} unidades vendidas"
+        )
       end
     end
 

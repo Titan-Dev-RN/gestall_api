@@ -30,6 +30,8 @@ Rails.application.routes.draw do
       resources :produtos, only: [:index, :show, :create, :update, :destroy] do
         member do
           post 'reativar_produto'
+          post 'adicionar_estoque'
+          post 'remover_estoque'
         end
         collection do
           get 'baixo_estoque'

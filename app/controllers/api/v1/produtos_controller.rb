@@ -1,7 +1,7 @@
 class Api::V1::ProdutosController < ApplicationController
-    before_action :authorize_loja_admin, only: [:create, :update, :destroy]
+    before_action :authorize_loja_admin, only: [:create, :update, :destroy, :adicionar_estoque, :remover_estoque, :reativar_produto, :baixo_estoque]
 
-    before_action :set_produto, only: [:show, :update, :destroy, :reativar_produto]
+    before_action :set_produto, only: [:show, :update, :destroy, :reativar_produto, :adicionar_estoque, :remover_estoque]
     
     # GET /api/v1/produtos
     def index
@@ -16,6 +16,16 @@ class Api::V1::ProdutosController < ApplicationController
     def create
       @produto = current_loja.estoque_produtos.new(produto_params)
       
+      HistoricoEstoque.create(
+        estoque_de_produto_id: @produto.id,
+        informacao_loja_id: current_loja.id,
+        usuario_id: @current_user.id,
+        tipo_movimentacao: 'cadastro',
+        quantidade: @produto.quantidade_em_estoque,
+        data_movimentacao: Time.current,
+        observacao: "Cadastro inicial do produto"
+      )
+
       if @produto.save
         render json: @produto.as_json.merge(nivel_permissao: @current_user.tipo_acesso), status: :created
       else
@@ -35,11 +45,31 @@ class Api::V1::ProdutosController < ApplicationController
     # DELETE /api/v1/produtos/1
     def destroy
       @produto.update(ativo: false)
+      HistoricoEstoque.create(
+        estoque_de_produto_id: @produto.id,
+        informacao_loja_id: current_loja.id,
+        usuario_id: @current_user.id,
+        tipo_movimentacao: 'desativacao',
+        quantidade: @produto.quantidade_em_estoque,
+        data_movimentacao: Time.current,
+        observacao: "Produto desativado"
+      )
+
       render json: { message: 'Produto desativado com sucesso'}, status: :ok
     end
 
     def reativar_produto
       @produto.update(ativo: true)
+
+      HistoricoEstoque.create(
+        estoque_de_produto_id: @produto.id,
+        informacao_loja_id: current_loja.id,
+        usuario_id: @current_user.id,
+        tipo_movimentacao: 'reativacao',
+        quantidade: @produto.quantidade_em_estoque,
+        data_movimentacao: Time.current,
+        observacao: "Produto reativado"
+      )
       render json: { message: 'produto reativado com sucesso'}, status: :ok
     end
   
@@ -48,7 +78,68 @@ class Api::V1::ProdutosController < ApplicationController
       @produtos = current_loja.estoque_produtos.where('quantidade_em_estoque < quantidade_minima')
       render json: @produtos
     end
-  
+
+    def adicionar_estoque
+      quantidade = params[:quantidade].to_i
+      observacao = params[:observacao]
+      
+      if quantidade <= 0
+        render json: { error: 'Quantidade deve ser maior que zero' }, status: :unprocessable_entity
+        return
+      end
+
+      @produto.increment!(:quantidade_em_estoque, quantidade)
+      
+      HistoricoEstoque.create(
+        estoque_de_produto_id: @produto.id,
+        informacao_loja_id: current_loja.id,
+        usuario_id: @current_user.id,
+        tipo_movimentacao: 'entrada',
+        quantidade: quantidade,
+        data_movimentacao: Time.current,
+        observacao: observacao || "Entrada de estoque manual"
+      )
+      
+      render json: { 
+        message: 'Estoque adicionado com sucesso',
+        produto: @produto.reload,
+        historico: HistoricoEstoque.last
+      }, status: :ok
+    end
+
+    def remover_estoque
+      quantidade = params[:quantidade].to_i
+      observacao = params[:observacao]
+      
+      if quantidade <= 0
+        render json: { error: 'Quantidade deve ser maior que zero' }, status: :unprocessable_entity
+        return
+      end
+
+      if @produto.quantidade_em_estoque < quantidade
+        render json: { error: 'Quantidade em estoque insuficiente' }, status: :unprocessable_entity
+        return
+      end
+
+      @produto.decrement!(:quantidade_em_estoque, quantidade)
+      
+      HistoricoEstoque.create(
+        estoque_de_produto_id: @produto.id,
+        informacao_loja_id: current_loja.id,
+        usuario_id: @current_user.id,
+        tipo_movimentacao: 'saida',
+        quantidade: quantidade,
+        data_movimentacao: Time.current,
+        observacao: observacao || "Saída de estoque manual"
+      )
+      
+      render json: { 
+        message: 'Estoque removido com sucesso',
+        produto: @produto.reload,
+        historico: HistoricoEstoque.last
+      }, status: :ok
+    end
+
     private
     def authorize_loja_admin
         unless @current_user.admin_loja? && @current_user.informacao_loja
@@ -72,4 +163,5 @@ class Api::V1::ProdutosController < ApplicationController
     def current_loja
       @current_user.informacao_loja
     end
+
   end
