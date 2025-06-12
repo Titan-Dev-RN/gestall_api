@@ -6,6 +6,8 @@ class Usuario < ApplicationRecord
   belongs_to :informacao_loja, optional: true
   belongs_to :funcionario, optional: true
   
+  before_create :set_uuid
+
   has_many :usuarios_permissoes
   has_many :permissoes, through: :usuarios_permissoes
   has_many :vendas, foreign_key: 'usuario_id'
@@ -27,5 +29,11 @@ class Usuario < ApplicationRecord
 
   def funcionario?
     tipo_acesso == "funcionario"
+  end
+
+  private 
+
+  def set_uuid
+    self.id ||= SecureRandom.uuid
   end
 end

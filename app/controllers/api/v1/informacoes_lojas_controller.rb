@@ -136,6 +136,8 @@ class Api::V1::InformacoesLojasController < ApplicationController
     ActiveRecord::Base.establish_connection(Rails.env.to_sym)
     unless Usuario.exists?(email: admin_email)
       Usuario.create!(
+        nome: "chico",
+        role: "o massa",
         email: admin_email,
         password: senha,
         password_confirmation: senha,
@@ -150,6 +152,8 @@ class Api::V1::InformacoesLojasController < ApplicationController
     ActiveRecord::Base.establish_connection(config)
     unless Usuario.exists?(email: admin_email)
       Usuario.create!(
+        nome: "chico",
+        role: "o massa",
         email: admin_email,
         password: senha,
         password_confirmation: senha,

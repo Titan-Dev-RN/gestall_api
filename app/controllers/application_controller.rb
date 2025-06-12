@@ -69,7 +69,7 @@ class ApplicationController < ActionController::API
         solution: 'Verifique se o token está completo e foi gerado com a mesma chave secreta'
       }, status: :unauthorized
     rescue => e
-      render json: { error: 'Erro de autenticação' }, status: :internal_server_error
+      render json: { error: 'Erro de autenticação', details: e.message }, status: :internal_server_error
     end
   end
   
