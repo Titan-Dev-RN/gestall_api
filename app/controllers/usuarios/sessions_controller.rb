@@ -36,7 +36,8 @@ class Usuarios::SessionsController < Devise::SessionsController
       jti: SecureRandom.uuid,
       user_data: {
         email: user.email,
-        tipo_acesso: user.tipo_acesso
+        tipo_acesso: user.tipo_acesso,
+        id_loja: user.id_loja
       }
     }
     

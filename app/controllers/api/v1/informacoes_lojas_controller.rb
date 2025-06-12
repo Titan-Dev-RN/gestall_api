@@ -129,38 +129,42 @@ class Api::V1::InformacoesLojasController < ApplicationController
 
   def criar_admin_padrao(loja)
     config = carregar_configuracao_banco(loja)
-    
-    begin
-      Rails.logger.info "Criando usuário admin para loja #{loja.id}"
-      
-      # Conectar ao banco da loja
-      ActiveRecord::Base.establish_connection(config)
-      
-      # Verificar se o usuário já existe
-      admin_email = "admin@#{loja.nome_da_loja.parameterize}.com"
-      
-      unless Usuario.exists?(email: admin_email)
-        Usuario.create!(
-          email: admin_email,
-          password: 'senha123',
-          password_confirmation: 'senha123',
-          tipo_acesso: 'admin_loja',
-          ativo: true,
-          id_loja: loja.id
-        )
-        
-        Rails.logger.info "Usuário admin criado: #{admin_email}"
-      else
-        Rails.logger.info "Usuário admin já existe: #{admin_email}"
-      end
-      
-    rescue => e
-      Rails.logger.error "Erro ao criar admin para loja #{loja.id}: #{e.message}"
-      raise "Falha ao criar usuário administrador: #{e.message}"
-    ensure
-      # Restaurar conexão principal
-      ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+    admin_email = "admin@#{loja.nome_da_loja.parameterize}.com"
+    senha = 'senha123'
+
+    # 1. Primeiro cria no banco principal
+    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+    unless Usuario.exists?(email: admin_email)
+      Usuario.create!(
+        email: admin_email,
+        password: senha,
+        password_confirmation: senha,
+        tipo_acesso: 'admin_loja',
+        ativo: true,
+        id_loja: loja.id
+      )
+      Rails.logger.info "Usuário admin criado no banco principal: #{admin_email}"
     end
+
+    # 2. Depois cria no banco da loja
+    ActiveRecord::Base.establish_connection(config)
+    unless Usuario.exists?(email: admin_email)
+      Usuario.create!(
+        email: admin_email,
+        password: senha,
+        password_confirmation: senha,
+        tipo_acesso: 'admin_loja',
+        ativo: true,
+        id_loja: loja.id
+      )
+      Rails.logger.info "Usuário admin criado no banco da loja: #{admin_email}"
+    end
+
+  rescue => e
+    Rails.logger.error "Erro ao criar admin para loja #{loja.id}: #{e.message}"
+    raise "Falha ao criar usuário administrador: #{e.message}"
+  ensure
+    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
   end
 
   def salvar_configuracao_banco(loja, main_config)
