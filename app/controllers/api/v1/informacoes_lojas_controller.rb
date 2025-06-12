@@ -15,32 +15,32 @@ class Api::V1::InformacoesLojasController < ApplicationController
 
   # POST /api/v1/informacoes_lojas
   def create
-    ActiveRecord::Base.transaction do
-      @loja = InformacaoLoja.new(loja_params)
-      @loja.token_integracao = SecureRandom.hex(16)
-      @loja.data_de_entrada = Time.current
-      @loja.ativo = true
+    @loja = InformacaoLoja.new(loja_params)
+    @loja.token_integracao = SecureRandom.hex(16)
+    @loja.data_de_entrada = Time.current
+    @loja.ativo = true
 
-      if @loja.save
+    if @loja.save
+      begin
         criar_banco_loja(@loja)
-        
         criar_admin_padrao(@loja)
         
         render json: {
           message: 'Loja criada com sucesso',
           loja: @loja,
-          database_config: database_config(@loja)
+          database_name: "gestall_#{@loja.id}"
         }, status: :created
-      else
-        render json: { errors: @loja.errors.full_messages }, status: :unprocessable_entity
-        raise ActiveRecord::Rollback
+      rescue => e
+        @loja.update(ativo: false)
+        render json: {
+          error: 'Falha na configuração',
+          details: e.message,
+          solution: 'Contacte o administrador do sistema'
+        }, status: :internal_server_error
       end
+    else
+      render json: { errors: @loja.errors.full_messages }, status: :unprocessable_entity
     end
-  rescue => e
-    render json: { 
-      error: 'Falha ao criar loja',
-      details: e.message 
-    }, status: :internal_server_error
   end
 
   # PATCH/PUT /api/v1/informacoes_lojas/1
@@ -81,67 +81,122 @@ class Api::V1::InformacoesLojasController < ApplicationController
   end
 
   def authorize_super_admin
-    unless @current_user.super_admin?
+    unless @current_user&.super_admin?
       render json: { error: 'Acesso não autorizado' }, status: :forbidden
     end
   end
 
   def criar_banco_loja(loja)
-    # Conexão temporária sem transação
-    conn = ActiveRecord::Base.connection_pool.checkout
-    conn.execute("CREATE DATABASE gestall_#{loja.id}")
-
-    # Configuração do banco de dados
-    config = {
-      adapter: 'postgresql',
-      encoding: 'unicode',
-      pool: 5,
-      username: 'postgres',
-      password: loja.cnpj,
-      host: 'localhost',
-      database: "gestall_#{loja.id}"
-    }
-
-    config_file = Rails.root.join('config', 'databases', "#{loja.id}.yml")
-    FileUtils.mkdir_p(File.dirname(config_file))
-    File.write(config_file, config.to_yaml)
-
-    ActiveRecord::Base.establish_connection(config)
-    if ActiveRecord::Base.respond_to?(:connection) && ActiveRecord::Base.connection.respond_to?(:migration_context)
-      ActiveRecord::Base.connection.migration_context.migrate
-    else
-      ActiveRecord::MigrationContext.new('db/migrate/').migrate
-    end
+    main_config = ActiveRecord::Base.connection_db_config.configuration_hash
     
-    # Volta para conexão principal
-    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
-    ActiveRecord::Base.connection_pool.checkin(conn)
-  rescue => e
-    Rails.logger.error "Falha ao criar banco para loja #{loja.id}: #{e.message}"
-    raise
+    begin
+      # Criar conexão temporária com PG
+      temp_conn = PG.connect(
+        dbname: 'postgres',
+        user: main_config[:username],
+        password: main_config[:password],
+        host: main_config[:host]
+      )
+      
+      # Criar o banco de dados
+      temp_conn.exec("CREATE DATABASE gestall_#{loja.id} ENCODING 'UTF8' TEMPLATE template0")
+      
+      config = {
+        adapter: 'postgresql',
+        encoding: 'unicode',
+        pool: 5,
+        username: main_config[:username],
+        password: main_config[:password],
+        host: main_config[:host],
+        database: "gestall_#{loja.id}"
+      }
+
+      config_file = Rails.root.join('config', 'databases', "#{loja.id}.yml")
+      FileUtils.mkdir_p(File.dirname(config_file))
+      File.write(config_file, config.to_yaml)
+
+      ActiveRecord::Base.establish_connection(config)
+      ActiveRecord::Tasks::DatabaseTasks.migrate
+      
+    rescue PG::Error => e
+      Rails.logger.error "Falha ao criar banco para loja #{loja.id}: #{e.message}"
+      raise "Falha ao criar banco de dados: #{e.message}"
+    ensure
+      temp_conn&.close
+      ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+    end
   end
 
   def criar_admin_padrao(loja)
-    config = YAML.load_file(Rails.root.join('config', 'databases', "#{loja.id}.yml"))
-    ActiveRecord::Base.establish_connection(config)
-
-    Usuario.create!(
-      email: "admin@#{loja.nome_da_loja.parameterize}.com",
-      password: 'senha123',
-      password_confirmation: 'senha123',
-      tipo_acesso: 'admin_loja',
-      ativo: true,
-      id_loja: loja.id
-    )
-
-    # Volta para a conexão principal
-    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
-  rescue => e
-    Rails.logger.error "Falha ao criar admin padrão para loja #{loja.id}: #{e.message}"
-    raise
+    config = carregar_configuracao_banco(loja)
+    
+    begin
+      Rails.logger.info "Criando usuário admin para loja #{loja.id}"
+      
+      # Conectar ao banco da loja
+      ActiveRecord::Base.establish_connection(config)
+      
+      # Verificar se o usuário já existe
+      admin_email = "admin@#{loja.nome_da_loja.parameterize}.com"
+      
+      unless Usuario.exists?(email: admin_email)
+        Usuario.create!(
+          email: admin_email,
+          password: 'senha123',
+          password_confirmation: 'senha123',
+          tipo_acesso: 'admin_loja',
+          ativo: true,
+          id_loja: loja.id
+        )
+        
+        Rails.logger.info "Usuário admin criado: #{admin_email}"
+      else
+        Rails.logger.info "Usuário admin já existe: #{admin_email}"
+      end
+      
+    rescue => e
+      Rails.logger.error "Erro ao criar admin para loja #{loja.id}: #{e.message}"
+      raise "Falha ao criar usuário administrador: #{e.message}"
+    ensure
+      # Restaurar conexão principal
+      ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+    end
   end
 
-  def database_config(loja)
+  def salvar_configuracao_banco(loja, main_config)
+    config = {
+      adapter: 'postgresql',
+      encoding: 'unicode',
+      pool: ENV.fetch('RAILS_MAX_THREADS', 5).to_i,
+      username: main_config[:username],
+      password: main_config[:password],
+      host: main_config[:host] || 'localhost',
+      port: main_config[:port] || 5432,
+      database: "gestall_#{loja.id}"
+    }
+
+    # Criar diretório se não existir
+    config_dir = Rails.root.join('config', 'databases')
+    FileUtils.mkdir_p(config_dir)
+    
+    # Salvar arquivo de configuração
+    config_file = config_dir.join("#{loja.id}.yml")
+    File.write(config_file, config.to_yaml)
+    
+    Rails.logger.info "Configuração salva em: #{config_file}"
+  end
+
+  def carregar_configuracao_banco(loja)
+    config_file = Rails.root.join('config', 'databases', "#{loja.id}.yml")
+    
+    unless File.exist?(config_file)
+      raise "Arquivo de configuração não encontrado: #{config_file}"
+    end
+    
+    YAML.load_file(config_file)
+  end
+
+  def database_info(loja)
     {
       database_name: "gestall_#{loja.id}",
       config_file: "config/databases/#{loja.id}.yml",

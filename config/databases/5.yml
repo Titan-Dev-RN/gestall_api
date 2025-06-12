@@ -1,8 +1,0 @@
----
-:adapter: postgresql
-:encoding: unicode
-:pool: 5
-:username: postgres
-:password: '12345678000199'
-:host: localhost
-:database: gestall_5
