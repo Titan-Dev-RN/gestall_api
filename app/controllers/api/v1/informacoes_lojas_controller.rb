@@ -134,24 +134,28 @@ class Api::V1::InformacoesLojasController < ApplicationController
 
     # 1. Primeiro cria no banco principal
     ActiveRecord::Base.establish_connection(Rails.env.to_sym)
-    unless Usuario.exists?(email: admin_email)
-      Usuario.create!(
-        nome: "chico",
-        role: "o massa",
-        email: admin_email,
-        password: senha,
-        password_confirmation: senha,
-        tipo_acesso: 'admin_loja',
-        ativo: true,
-        id_loja: loja.id
-      )
-      Rails.logger.info "Usuário admin criado no banco principal: #{admin_email}"
-    end
+    user = Usuario.create!(
+      nome: "chico",
+      role: "o massa",
+      email: admin_email,
+      password: senha,
+      password_confirmation: senha,
+      tipo_acesso: 'admin_loja',
+      ativo: true,
+      id_loja: loja.id
+    )
+    Rails.logger.info "Usuário admin criado no banco principal: #{admin_email}"
 
     # 2. Depois cria no banco da loja
     ActiveRecord::Base.establish_connection(config)
+    
+    unless InformacaoLoja.exists?(id: loja.id)
+      InformacaoLoja.create!(loja.attributes.merge(id: loja.id).except('created_at', 'updated_at'))
+    end
+
     unless Usuario.exists?(email: admin_email)
       Usuario.create!(
+        id: user.id,
         nome: "chico",
         role: "o massa",
         email: admin_email,
