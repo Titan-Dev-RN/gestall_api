@@ -1,11 +1,11 @@
 class Usuarios::SessionsController < Devise::SessionsController
   skip_before_action :verify_authenticity_token
   respond_to :json
+  
   def create
     user = Usuario.find_for_database_authentication(email: params[:usuario][:email])
     
     if user&.valid_password?(params[:usuario][:password])
-
       token = generate_jwt_token(user)
        
       render json: {
@@ -25,7 +25,7 @@ class Usuarios::SessionsController < Devise::SessionsController
 
   private
   def loja_ativa?(user)
-    loja = InformacaoLoja.find_by(id: user.id_loja)
+    loja = InformacaoLoja.find_by(token_integracao: user.token_integracao_loja)
     loja&.ativo
   end
 
@@ -37,11 +37,10 @@ class Usuarios::SessionsController < Devise::SessionsController
       user_data: {
         email: user.email,
         tipo_acesso: user.tipo_acesso,
-        id_loja: user.id_loja
+        token_integracao_loja: user.token_integracao_loja
       }
     }
     
-    # Verificação extrema da chave
     raise "Chave JWT_SECRET_KEY ausente!" unless ENV['JWT_SECRET_KEY'].present?
     
     JWT.encode(payload, ENV['JWT_SECRET_KEY'], 'HS256')

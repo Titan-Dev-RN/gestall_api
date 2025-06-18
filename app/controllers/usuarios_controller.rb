@@ -1,23 +1,22 @@
 class UsuariosController < ApplicationController
+  def index
+    @usuarios = Usuario.all
+    render json: @usuarios, status: :ok
+  end
+  
+  def create
+    @usuario = Usuario.new(usuario_params)
+    if @usuario.save
+      render json: { message: "Usuário criado com sucesso", usuario: @usuario }, status: :created
+    else
+      render json: { errors: @usuario.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
 
-    def index
-      @usuarios = Usuario.all
-      render json: @usuarios, status: :ok
-    end
-    
-    def create
-      @usuario = Usuario.new(usuario_params)
-      if @usuario.save
-        render json: { message: "Usuário criado com sucesso", usuario: @usuario }, status: :created
-      else
-        render json: { errors: @usuario.errors.full_messages }, status: :unprocessable_entity
-      end
-    end
-  
-    private
-  
-    def usuario_params
-      params.require(:usuario).permit(:nome, 
+  private
+  def usuario_params
+    params.require(:usuario).permit(
+      :nome, 
       :email, 
       :password, 
       :password_confirmation, 
@@ -25,9 +24,8 @@ class UsuariosController < ApplicationController
       :password_reset_required, 
       :tipo_acesso, 
       :ativo, 
-      :id_loja,
-      :id_funcionario,  
-      )
-    end
+      :token_integracao_loja, 
+      :id_funcionario
+    )
   end
-  
+end

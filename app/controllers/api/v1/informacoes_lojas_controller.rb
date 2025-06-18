@@ -28,7 +28,7 @@ class Api::V1::InformacoesLojasController < ApplicationController
         render json: {
           message: 'Loja criada com sucesso',
           loja: @loja,
-          database_name: "gestall_#{@loja.id}"
+          database_name: "gestall_#{@loja.token_integracao}"
         }, status: :created
       rescue => e
         @loja.update(ativo: false)
@@ -98,8 +98,9 @@ class Api::V1::InformacoesLojasController < ApplicationController
         host: main_config[:host]
       )
       
-      # Criar o banco de dados
-      temp_conn.exec("CREATE DATABASE gestall_#{loja.id} ENCODING 'UTF8' TEMPLATE template0")
+      # Criar o banco de dados usando token como identificador
+      db_name = "gestall_#{loja.token_integracao.parameterize.underscore}"
+      temp_conn.exec("CREATE DATABASE #{db_name} ENCODING 'UTF8' TEMPLATE template0")
       
       config = {
         adapter: 'postgresql',
@@ -108,18 +109,20 @@ class Api::V1::InformacoesLojasController < ApplicationController
         username: main_config[:username],
         password: main_config[:password],
         host: main_config[:host],
-        database: "gestall_#{loja.id}"
+        database: db_name
       }
 
-      config_file = Rails.root.join('config', 'databases', "#{loja.id}.yml")
+      # Salvar configuração usando token
+      config_file = Rails.root.join('config', 'databases', "#{loja.token_integracao}.yml")
       FileUtils.mkdir_p(File.dirname(config_file))
       File.write(config_file, config.to_yaml)
 
+      # Migrar para o novo banco
       ActiveRecord::Base.establish_connection(config)
       ActiveRecord::Tasks::DatabaseTasks.migrate
       
     rescue PG::Error => e
-      Rails.logger.error "Falha ao criar banco para loja #{loja.id}: #{e.message}"
+      Rails.logger.error "Falha ao criar banco para loja #{loja.token_integracao}: #{e.message}"
       raise "Falha ao criar banco de dados: #{e.message}"
     ensure
       temp_conn&.close
@@ -130,76 +133,59 @@ class Api::V1::InformacoesLojasController < ApplicationController
   def criar_admin_padrao(loja)
     config = carregar_configuracao_banco(loja)
     admin_email = "admin@#{loja.nome_da_loja.parameterize}.com"
-    senha = 'senha123'
+    senha = SecureRandom.hex(8) # Senha mais segura
 
     # 1. Primeiro cria no banco principal
     ActiveRecord::Base.establish_connection(Rails.env.to_sym)
     user = Usuario.create!(
-      nome: "chico",
-      role: "o massa",
+      nome: "Admin #{loja.nome_da_loja}",
       email: admin_email,
       password: senha,
       password_confirmation: senha,
       tipo_acesso: 'admin_loja',
       ativo: true,
-      id_loja: loja.id
+      token_integracao_loja: loja.token_integracao # Usando token em vez de id
     )
     Rails.logger.info "Usuário admin criado no banco principal: #{admin_email}"
 
     # 2. Depois cria no banco da loja
     ActiveRecord::Base.establish_connection(config)
     
-    unless InformacaoLoja.exists?(id: loja.id)
-      InformacaoLoja.create!(loja.attributes.merge(id: loja.id).except('created_at', 'updated_at'))
+    # Garantir que a loja existe no banco da loja
+    unless InformacaoLoja.exists?(token_integracao: loja.token_integracao)
+      InformacaoLoja.create!(loja.attributes.except('id', 'created_at', 'updated_at'))
     end
 
+    # Criar usuário admin no banco da loja
     unless Usuario.exists?(email: admin_email)
       Usuario.create!(
         id: user.id,
-        nome: "chico",
-        role: "o massa",
+        nome: "Admin #{loja.nome_da_loja}",
         email: admin_email,
         password: senha,
         password_confirmation: senha,
         tipo_acesso: 'admin_loja',
         ativo: true,
-        id_loja: loja.id
+        token_integracao_loja: loja.token_integracao
       )
       Rails.logger.info "Usuário admin criado no banco da loja: #{admin_email}"
     end
 
+    # Retornar informações úteis
+    {
+      email: admin_email,
+      password: senha,
+      database_name: "gestall_#{loja.token_integracao}"
+    }
   rescue => e
-    Rails.logger.error "Erro ao criar admin para loja #{loja.id}: #{e.message}"
+    Rails.logger.error "Erro ao criar admin para loja #{loja.token_integracao}: #{e.message}"
     raise "Falha ao criar usuário administrador: #{e.message}"
   ensure
     ActiveRecord::Base.establish_connection(Rails.env.to_sym)
   end
 
-  def salvar_configuracao_banco(loja, main_config)
-    config = {
-      adapter: 'postgresql',
-      encoding: 'unicode',
-      pool: ENV.fetch('RAILS_MAX_THREADS', 5).to_i,
-      username: main_config[:username],
-      password: main_config[:password],
-      host: main_config[:host] || 'localhost',
-      port: main_config[:port] || 5432,
-      database: "gestall_#{loja.id}"
-    }
-
-    # Criar diretório se não existir
-    config_dir = Rails.root.join('config', 'databases')
-    FileUtils.mkdir_p(config_dir)
-    
-    # Salvar arquivo de configuração
-    config_file = config_dir.join("#{loja.id}.yml")
-    File.write(config_file, config.to_yaml)
-    
-    Rails.logger.info "Configuração salva em: #{config_file}"
-  end
-
   def carregar_configuracao_banco(loja)
-    config_file = Rails.root.join('config', 'databases', "#{loja.id}.yml")
+    config_file = Rails.root.join('config', 'databases', "#{loja.token_integracao}.yml")
     
     unless File.exist?(config_file)
       raise "Arquivo de configuração não encontrado: #{config_file}"

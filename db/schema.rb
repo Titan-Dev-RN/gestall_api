@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_10_103955) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_18_120229) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -90,7 +90,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_10_103955) do
 
   create_table "funcionarios", force: :cascade do |t|
     t.bigint "informacao_loja_id", null: false
-    t.bigint "usuario_id", null: false
     t.string "nome"
     t.string "cpf"
     t.string "rg"
@@ -107,23 +106,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_10_103955) do
     t.text "observacoes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "usuario_id"
     t.index ["informacao_loja_id"], name: "index_funcionarios_on_informacao_loja_id"
-    t.index ["usuario_id"], name: "index_funcionarios_on_usuario_id"
   end
 
   create_table "historico_estoques", force: :cascade do |t|
     t.bigint "estoque_de_produto_id", null: false
     t.bigint "informacao_loja_id", null: false
-    t.bigint "usuario_id", null: false
     t.string "tipo_movimentacao"
     t.integer "quantidade"
     t.datetime "data_movimentacao"
     t.text "observacao"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "usuario_id"
     t.index ["estoque_de_produto_id"], name: "index_historico_estoques_on_estoque_de_produto_id"
     t.index ["informacao_loja_id"], name: "index_historico_estoques_on_informacao_loja_id"
-    t.index ["usuario_id"], name: "index_historico_estoques_on_usuario_id"
   end
 
   create_table "informacao_lojas", force: :cascade do |t|
@@ -205,15 +203,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_10_103955) do
   end
 
   create_table "usuario_permissaos", force: :cascade do |t|
-    t.bigint "usuario_id", null: false
     t.bigint "permissao_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "usuario_id"
     t.index ["permissao_id"], name: "index_usuario_permissaos_on_permissao_id"
-    t.index ["usuario_id"], name: "index_usuario_permissaos_on_usuario_id"
   end
 
-  create_table "usuarios", force: :cascade do |t|
+  create_table "usuarios", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "reset_password_token"
@@ -224,7 +221,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_10_103955) do
     t.string "nome"
     t.string "role"
     t.boolean "password_reset_required"
-    t.integer "id_loja"
     t.integer "id_funcionario"
     t.string "tipo_acesso"
     t.integer "sign_in_count"
@@ -236,8 +232,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_10_103955) do
     t.datetime "locked_at"
     t.string "unlock_token"
     t.boolean "ativo", default: true
+    t.string "token_integracao_loja"
     t.index ["email"], name: "index_usuarios_on_email", unique: true
     t.index ["reset_password_token"], name: "index_usuarios_on_reset_password_token", unique: true
+    t.index ["token_integracao_loja"], name: "index_usuarios_on_token_integracao_loja"
   end
 
   create_table "vendas", force: :cascade do |t|
@@ -248,13 +246,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_10_103955) do
     t.decimal "desconto"
     t.string "status"
     t.string "forma_pagamento"
-    t.bigint "usuario_id", null: false
     t.text "observacoes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "usuario_id"
     t.index ["cliente_id"], name: "index_vendas_on_cliente_id"
     t.index ["informacao_loja_id"], name: "index_vendas_on_informacao_loja_id"
-    t.index ["usuario_id"], name: "index_vendas_on_usuario_id"
   end
 
   add_foreign_key "assinaturas", "informacao_lojas"

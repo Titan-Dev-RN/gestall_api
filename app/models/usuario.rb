@@ -3,7 +3,13 @@ class Usuario < ApplicationRecord
        :recoverable, :rememberable, :validatable,
        :jwt_authenticatable, jwt_revocation_strategy: Devise::JWT::RevocationStrategies::Null
 
-  belongs_to :informacao_loja, optional: true
+  self.primary_key = :id
+
+  belongs_to :informacao_loja, 
+             optional: true, 
+             foreign_key: :token_integracao_loja, 
+             primary_key: :token_integracao
+             
   belongs_to :funcionario, optional: true
   
   before_create :set_uuid

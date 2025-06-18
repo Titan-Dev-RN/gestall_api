@@ -11,7 +11,7 @@ class ApplicationController < ActionController::API
   rescue_from JWT::DecodeError, with: :invalid_token
 
   def current_tenant
-    @current_tenant ||= InformacaoLoja.find_by(id: @current_user.id_loja) if @current_user
+    @current_tenant ||= InformacaoLoja.find_by(token_integracao: @current_user.token_integracao_loja) if @current_user
   end
 
   private
@@ -19,7 +19,7 @@ class ApplicationController < ActionController::API
     return unless @current_user
     return if @current_user.super_admin?
 
-    loja = InformacaoLoja.find_by(id: @current_user.id_loja)
+    loja = InformacaoLoja.find_by(token_integracao: @current_user.token_integracao_loja)
     unless loja
       render json: { error: 'Loja não encontrada.' }, status: :not_found and return
     end
