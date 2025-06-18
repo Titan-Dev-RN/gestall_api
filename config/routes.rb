@@ -35,6 +35,7 @@ Rails.application.routes.draw do
         end
         collection do
           get 'baixo_estoque'
+          post 'criar_categoria'
           get 'por_categoria/:categoria', action: :por_categoria
         end
       end

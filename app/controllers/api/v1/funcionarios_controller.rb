@@ -2,9 +2,11 @@ class Api::V1::FuncionariosController < ApplicationController
   before_action :authorize_admin_loja!
   before_action :set_funcionario, only: [:show, :update, :destroy]
 
-  # GET /api/v1/funcionarios
   def index
-    funcionarios = Usuario.where(id_loja: @current_user.id_loja, tipo_acesso: :funcionario)
+    funcionarios = Usuario.where(
+      token_integracao_loja: @current_user.token_integracao_loja, 
+      tipo_acesso: :funcionario
+    )
     render json: funcionarios
   end
 
@@ -43,7 +45,6 @@ class Api::V1::FuncionariosController < ApplicationController
   end
 
   private
-
   def authorize_admin_loja!
     unless @current_user&.admin_loja?
       render json: { error: 'Acesso não autorizado' }, status: :forbidden
@@ -51,7 +52,11 @@ class Api::V1::FuncionariosController < ApplicationController
   end
 
   def set_funcionario
-    @funcionario = Usuario.find_by(id: params[:id], id_loja: @current_user.id_loja, tipo_acesso: :funcionario)
+    @funcionario = Usuario.find_by(
+      id: params[:id], 
+      token_integracao_loja: @current_user.token_integracao_loja,
+      tipo_acesso: :funcionario
+    )
     unless @funcionario
       render json: { error: 'Funcionário não encontrado' }, status: :not_found
     end

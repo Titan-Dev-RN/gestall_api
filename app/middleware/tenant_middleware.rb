@@ -16,12 +16,12 @@ class TenantMiddleware
         decoded_token = JWT.decode(token, nil, false)
         payload = decoded_token.first
         
-        # 3. Obtém o ID da loja do payload do token
-        loja_id = payload.dig('user_data', 'id_loja') || payload.dig('id_loja')
+        # 3. Obtém o token de integração da loja do payload do token
+        token_integracao = payload.dig('user_data', 'token_integracao_loja') || payload.dig('token_integracao_loja')
         
-        if loja_id.present?
+        if token_integracao.present?
           # 4. Verifica se o arquivo de configuração do banco existe
-          config_file = Rails.root.join('config', 'databases', "#{loja_id}.yml")
+          config_file = Rails.root.join('config', 'databases', "#{token_integracao}.yml")
           
           if File.exist?(config_file)
             # 5. Carrega a configuração e estabelece a conexão
@@ -36,9 +36,12 @@ class TenantMiddleware
             # 7. Estabelece a conexão com o banco da loja
             ActiveRecord::Base.establish_connection(config)
             
-            Rails.logger.info "Conexão estabelecida com o banco da loja #{loja_id}"
+            Rails.logger.info "Conexão estabelecida com o banco da loja #{token_integracao}"
+            
+            # 8. Armazena a conexão atual no request env para uso posterior
+            env['current_tenant_db'] = config['database']
           else
-            Rails.logger.warn "Arquivo de configuração não encontrado para loja #{loja_id}"
+            Rails.logger.warn "Arquivo de configuração não encontrado para loja #{token_integracao}"
           end
         end
       rescue JWT::DecodeError => e
@@ -50,8 +53,8 @@ class TenantMiddleware
 
     @app.call(env)
   ensure
-    # 8. Garante que a conexão padrão seja restaurada
-    if ActiveRecord::Base.connection_db_config.database != Rails.env
+    # 9. Garante que a conexão padrão seja restaurada apenas se necessário
+    if env['current_tenant_db'] && ActiveRecord::Base.connection_db_config.database != Rails.env
       ActiveRecord::Base.establish_connection(Rails.env.to_sym)
       Rails.logger.debug "Conexão restaurada para o banco principal"
     end

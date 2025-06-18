@@ -5,7 +5,8 @@ class ApplicationController < ActionController::API
   before_action :set_default_format
   before_action :authenticate_api_request, unless: -> { auth_whitelist? }
   before_action :verificar_loja_ativa, unless: -> { auth_whitelist? }
-
+  before_action :switch_to_tenant_database
+  
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from ActiveRecord::RecordInvalid, with: :invalid_record
   rescue_from JWT::DecodeError, with: :invalid_token
@@ -15,6 +16,17 @@ class ApplicationController < ActionController::API
   end
 
   private
+
+  def switch_to_tenant_database
+    return unless @current_user
+    
+    config_file = Rails.root.join('config', 'databases', "#{@current_user.token_integracao_loja}.yml")
+    return unless File.exist?(config_file)
+
+    config = YAML.load_file(config_file)
+    ActiveRecord::Base.establish_connection(config)
+  end
+
   def verificar_loja_ativa
     return unless @current_user
     return if @current_user.super_admin?
