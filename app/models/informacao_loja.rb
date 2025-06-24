@@ -28,77 +28,104 @@ class InformacaoLoja < ApplicationRecord
 
   def carregar_configuracao_banco
     config_file = Rails.root.join('config', 'databases', "#{token_integracao}.yml")
-    
-    unless File.exist?(config_file)
-      raise "Arquivo de configuração não encontrado: #{config_file}"
-    end
-    
     YAML.load_file(config_file)
   end
 
   def criar_banco_dados
     main_config = ActiveRecord::Base.connection_db_config.configuration_hash
     
+    # Configurações padrão para conexão administrativa
+    conn_params = {
+      dbname: 'postgres', # Conexão ao banco padrão do PostgreSQL
+      user: main_config[:username] || main_config[:user] || 'postgres',
+      password: main_config[:password],
+      host: main_config[:host] || 'localhost',
+      port: main_config[:port] || 5432
+    }.compact
+
     begin
-      temp_conn = PG.connect(
-        dbname: 'postgres',
-        user: main_config[:username],
-        password: main_config[:password],
-        host: main_config[:host]
-      )
+      # Conectar ao PostgreSQL para criar o banco
+      conn = PG.connect(conn_params)
       
+      # Nome do banco de dados da loja
       db_name = "gestall_#{token_integracao.parameterize.underscore}"
-      temp_conn.exec("CREATE DATABASE #{db_name} ENCODING 'UTF8' TEMPLATE template0")
       
+      # Verificar se o banco já existe
+      result = conn.exec("SELECT 1 FROM pg_database WHERE datname = '#{db_name}'")
+      
+      if result.ntuples.zero?
+        conn.exec("CREATE DATABASE #{db_name} ENCODING 'UTF8' TEMPLATE template0")
+        Rails.logger.info "Banco de dados #{db_name} criado com sucesso"
+      else
+        Rails.logger.info "Banco de dados #{db_name} já existe"
+      end
+      
+      # Configuração para uso com ActiveRecord
       config = {
         adapter: 'postgresql',
         encoding: 'unicode',
         pool: 5,
-        username: main_config[:username],
-        password: main_config[:password],
-        host: main_config[:host],
+        username: conn_params[:user],
+        password: conn_params[:password],
+        host: conn_params[:host],
+        port: conn_params[:port],
         database: db_name
       }
 
+      # Salvar configuração no arquivo YML
       config_file = Rails.root.join('config', 'databases', "#{token_integracao}.yml")
       FileUtils.mkdir_p(File.dirname(config_file))
       File.write(config_file, config.to_yaml)
 
-      ActiveRecord::Base.establish_connection(config)
-      ActiveRecord::Tasks::DatabaseTasks.migrate
-      
     rescue PG::Error => e
-      Rails.logger.error "Falha ao criar banco para loja #{token_integracao}: #{e.message}"
+      Rails.logger.error "Falha ao criar banco: #{e.message}"
       raise "Falha ao criar banco de dados: #{e.message}"
     ensure
-      temp_conn&.close
-      ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+      conn&.close
     end
   end
 
   def duplicar_para_banco_da_loja
     config = carregar_configuracao_banco
-    ActiveRecord::Base.establish_connection(config)
+    
+    # Conexão direta com PG usando a configuração do banco recém-criado
+    conn_params = {
+      dbname: config['database'],
+      user: config['username'] || config['user'],
+      password: config['password'],
+      host: config['host'] || 'localhost',
+      port: config['port'] || 5432
+    }.compact
 
-    unless ActiveRecord::Base.connection.table_exists?('informacao_lojas')
-      ActiveRecord::Tasks::DatabaseTasks.migrate
+    begin
+      # Executar migrações via linha de comando
+      database_url = "postgresql://#{conn_params[:user]}:#{conn_params[:password]}@#{conn_params[:host]}:#{conn_params[:port]}/#{conn_params[:dbname]}"
+      system({"RAILS_ENV" => Rails.env, "DATABASE_URL" => database_url}, "bundle exec rails db:migrate")
+      
+      # Conexão para inserir os dados
+      conn = PG.connect(conn_params)
+      
+      # Construir query SQL para inserir a loja
+      attrs = attributes.except('id', 'created_at', 'updated_at')
+      columns = attrs.keys.join(', ')
+      values = attrs.values.map { |v| conn.escape_literal(v) }.join(', ')
+      
+      conn.exec("INSERT INTO informacao_lojas (#{columns}) VALUES (#{values})")
+      
+      Rails.logger.info "Loja duplicada no banco tenant #{config['database']}"
+    rescue PG::Error => e
+      Rails.logger.error "Erro ao configurar banco tenant: #{e.message}"
+      raise "Falha ao configurar banco tenant: #{e.message}"
+    ensure
+      conn&.close
     end
-
-    InformacaoLoja.create!(attributes.except('id', 'created_at', 'updated_at'))
-  rescue => e
-    Rails.logger.error "Falha ao duplicar InformacaoLoja: #{e.message}"
-    raise if Rails.env.development?
-  ensure
-    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
   end
 
   def criar_admin_padrao
-    config = carregar_configuracao_banco
     admin_email = "admin@#{nome_da_loja.parameterize}.com"
     senha = SecureRandom.hex(8)
 
     # Criar no banco principal
-    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
     user = Usuario.create!(
       nome: "Admin #{nome_da_loja}",
       email: admin_email,
@@ -110,28 +137,23 @@ class InformacaoLoja < ApplicationRecord
     )
 
     # Criar no banco da loja
-    ActiveRecord::Base.establish_connection(config)
-    
-    unless InformacaoLoja.exists?(token_integracao: token_integracao)
-      InformacaoLoja.create!(attributes.except('id', 'created_at', 'updated_at'))
-    end
+    config = carregar_configuracao_banco
+    conn = PG.connect(config)
 
-    unless Usuario.exists?(email: admin_email)
-      Usuario.create!(
-        id: user.id,
-        nome: "Admin #{nome_da_loja}",
-        email: admin_email,
-        password: senha,
-        password_confirmation: senha,
-        tipo_acesso: 'admin_loja',
-        ativo: true,
-        token_integracao_loja: token_integracao
-      )
+    begin
+      # Construir query SQL para usuário
+      user_attrs = user.attributes.except('id', 'created_at', 'updated_at')
+      columns = user_attrs.keys.join(', ')
+      values = user_attrs.values.map { |v| conn.escape_literal(v) }.join(', ')
+      
+      # Inserir usuário
+      conn.exec("INSERT INTO usuarios (#{columns}) VALUES (#{values})")
+      
+      Rails.logger.info "Admin criado no banco tenant"
+    rescue PG::Error => e
+      Rails.logger.error "Erro ao criar admin: #{e.message}"
+    ensure
+      conn&.close
     end
-  rescue => e
-    Rails.logger.error "Erro ao criar admin: #{e.message}"
-    raise
-  ensure
-    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
   end
 end

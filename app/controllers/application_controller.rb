@@ -19,7 +19,8 @@ class ApplicationController < ActionController::API
 
   def switch_to_tenant_database
     return unless @current_user
-    
+    return if request.path.include?('/api/v1/informacoes_lojas') && request.post?
+
     config_file = Rails.root.join('config', 'databases', "#{@current_user.token_integracao_loja}.yml")
     return unless File.exist?(config_file)
 

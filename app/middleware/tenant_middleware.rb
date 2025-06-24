@@ -6,6 +6,9 @@ class TenantMiddleware
   def call(env)
     request = ActionDispatch::Request.new(env)
     
+    if request.path.include?('/api/v1/informacoes_lojas') && request.post?
+      return @app.call(env)
+    end
     # 1. Extrai o token JWT do header Authorization
     auth_header = request.headers['Authorization']
     token = auth_header&.split(' ')&.last if auth_header&.start_with?('Bearer ')
