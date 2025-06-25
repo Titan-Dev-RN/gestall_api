@@ -72,7 +72,7 @@ class Api::V1::InformacoesLojasController < ApplicationController
     params.require(:informacao_loja).permit(
       :nome_da_loja, :nome_dono, :forma_de_pagamento, :endereco, 
       :cidade, :estado, :cnpj, :telefone, :email, :plano_contratado,
-      :data_vencimento_plano, :configuracoes
+      :data_vencimento_plano
     )
   end
 
