@@ -26,7 +26,7 @@ class Usuario < ApplicationRecord
   }, default: :funcionario
 
   def informacao_loja
-    InformacaoLoja.find_by(id: id_loja)
+    InformacaoLoja.find_by(token_integracao: token_integracao_loja)
   end
 
   def admin_loja?
