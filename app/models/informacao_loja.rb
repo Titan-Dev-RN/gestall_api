@@ -126,7 +126,7 @@ class InformacaoLoja < ApplicationRecord
 
   def criar_admin_padrao
     admin_email = "admin@#{nome_da_loja.parameterize}.com"
-    senha = SecureRandom.hex(8)
+    senha = "senha123"
     db_name = "gestall_#{token_integracao.parameterize.underscore}"
     pg_config = FIXED_DB_CONFIG.merge(dbname: db_name)
 
