@@ -1,5 +1,4 @@
 class Api::V1::VendasController < ApplicationController
-  before_action :authorize_vendedor
   before_action :set_venda, only: [:show, :adicionar_item, :remover_item, :finalizar, :cancelar, :aumentar_quantidade, :atualizar_desconto_item]
 
   def index
@@ -172,12 +171,6 @@ class Api::V1::VendasController < ApplicationController
   end
 
   private
-  def authorize_vendedor
-    unless (@current_user.funcionario? && @current_user.token_integracao_loja) || 
-          (@current_user.admin_loja? && @current_user.token_integracao_loja)
-      render json: { error: 'Acesso não autorizado' }, status: :forbidden
-    end
-  end
 
   def set_venda
     loja = InformacaoLoja.find_by(token_integracao: @current_user.token_integracao_loja)

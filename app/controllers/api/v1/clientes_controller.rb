@@ -1,5 +1,4 @@
 class Api::V1::ClientesController < ApplicationController
-  before_action :authorize_vendedor_admin
   before_action :set_cliente, only: [:show, :update, :destroy, :reativar_cliente]
 
   def index
@@ -46,12 +45,6 @@ class Api::V1::ClientesController < ApplicationController
   end
 
   private
-  def authorize_vendedor_admin
-    unless (@current_user.funcionario? && @current_user.token_integracao_loja) || 
-           (@current_user.admin_loja? && @current_user.token_integracao_loja)
-      render json: { error: 'Acesso não autorizado' }, status: :forbidden
-    end
-  end
 
   def set_cliente
     @cliente = Cliente.find_by(

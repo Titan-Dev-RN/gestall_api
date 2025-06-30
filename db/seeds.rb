@@ -1,3 +1,5 @@
+Permissao.criar_permissoes_fixas
+
 admin = Usuario.create!(
   nome: "titan",
   email: "titan@titan.com",

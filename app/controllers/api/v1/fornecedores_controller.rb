@@ -1,5 +1,4 @@
 class Api::V1::FornecedoresController < ApplicationController
-  before_action :authorize_loja_admin
   before_action :set_fornecedor, only: [:show, :update, :destroy, :reativar_fornecedor]
 
   def index
@@ -47,11 +46,6 @@ class Api::V1::FornecedoresController < ApplicationController
   end
   
   private
-  def authorize_loja_admin
-    unless @current_user.admin_loja? && @current_user.token_integracao_loja
-      render json: { error: 'Acesso não autorizado' }, status: :forbidden
-    end
-  end
 
   def set_fornecedor
     @fornecedor = Fornecedor.find_by(

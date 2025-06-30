@@ -37,6 +37,22 @@ class Usuario < ApplicationRecord
     tipo_acesso == "funcionario"
   end
 
+  def tem_permissao?(permissao_nome)
+    return true if super_admin?
+    
+    return true if admin_loja? && !permissao_nome.start_with?('super_')
+    
+    permissoes.exists?(nome: permissao_nome)
+  end
+
+  def tem_permissoes?(*permissoes_nomes)
+    permissoes_nomes.all? { |pn| tem_permissao?(pn) }
+  end
+
+  def tem_alguma_permissao?(*permissoes_nomes)
+    permissoes_nomes.any? { |pn| tem_permissao?(pn) }
+  end
+
   private 
 
   def set_uuid

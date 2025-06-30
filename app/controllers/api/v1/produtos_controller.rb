@@ -1,5 +1,4 @@
 class Api::V1::ProdutosController < ApplicationController
-  before_action :authorize_loja_admin
   before_action :set_produto, only: [:show, :update, :destroy, :reativar_produto, :adicionar_estoque, :remover_estoque]
 
   def index
@@ -151,11 +150,7 @@ class Api::V1::ProdutosController < ApplicationController
   end
 
   private
-  def authorize_loja_admin
-    unless @current_user.admin_loja? && @current_user.token_integracao_loja
-      render json: { error: 'Acesso não autorizado' }, status: :forbidden
-    end
-  end
+
 
   def set_produto
     @produto = current_loja.estoque_produtos.find(params[:id])

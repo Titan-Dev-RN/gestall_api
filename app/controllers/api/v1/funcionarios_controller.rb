@@ -1,5 +1,4 @@
 class Api::V1::FuncionariosController < ApplicationController
-  before_action :authorize_admin_loja!
   before_action :set_funcionario, only: [:show, :update, :destroy]
 
   # GET /api/v1/funcionarios
@@ -89,11 +88,6 @@ class Api::V1::FuncionariosController < ApplicationController
 
   private
 
-  def authorize_admin_loja!
-    unless @current_user&.admin_loja? && @current_user.token_integracao_loja == current_tenant.token_integracao
-      render json: { error: 'Acesso não autorizado' }, status: :forbidden
-    end
-  end
 
   def set_funcionario
     @funcionario = Funcionario.find_by(

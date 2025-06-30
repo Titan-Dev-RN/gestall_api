@@ -30,6 +30,7 @@ class InformacaoLoja < ApplicationRecord
     criar_banco_dados
     duplicar_para_banco_da_loja
     criar_admin_padrao
+    criar_permissoes_fixas
   end
 
   private
@@ -212,5 +213,24 @@ class InformacaoLoja < ApplicationRecord
       conn&.close
       ActiveRecord::Base.establish_connection(Rails.env.to_sym)
     end
+  end
+
+  def criar_permissoes_fixas
+    db_name = "gestall_#{token_integracao.parameterize.underscore}"
+    
+    ActiveRecord::Base.establish_connection(
+      adapter: 'postgresql',
+      database: db_name,
+      **FIXED_DB_CONFIG.except(:dbname)
+    )
+    
+    Permissao.criar_permissoes_fixas
+    
+    Rails.logger.info "Permissões fixas criadas no banco #{db_name}"
+  rescue => e
+    Rails.logger.error "Falha ao criar permissões: #{e.message}"
+    raise
+  ensure
+    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
   end
 end
