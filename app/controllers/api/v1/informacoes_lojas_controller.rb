@@ -1,5 +1,4 @@
 class Api::V1::InformacoesLojasController < ApplicationController
-  before_action :authorize_super_admin, only: [:create, :update, :destroy]
   before_action :set_loja, only: [:show, :update, :destroy, :reativar]
 
   # GET /api/v1/informacoes_lojas
@@ -76,10 +75,5 @@ class Api::V1::InformacoesLojasController < ApplicationController
     )
   end
 
-  def authorize_super_admin
-    unless @current_user&.super_admin?
-      render json: { error: 'Acesso não autorizado' }, status: :forbidden
-    end
-  end
 
 end
