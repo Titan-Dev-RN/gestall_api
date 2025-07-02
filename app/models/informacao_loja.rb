@@ -31,6 +31,9 @@ class InformacaoLoja < ApplicationRecord
     duplicar_para_banco_da_loja
     criar_admin_padrao
     criar_permissoes_fixas
+    rescue => e
+      destroy if persisted?
+      raise e
   end
 
   private
@@ -117,11 +120,16 @@ class InformacaoLoja < ApplicationRecord
         processed_attrs.values
       )
       
+      ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+      unless InformacaoLoja.exists?(cnpj: attrs['cnpj'])
+        InformacaoLoja.insert_all([attrs.except('id')])
+      end
     rescue PG::Error => e
       Rails.logger.error "Erro PostgreSQL: #{e.message}"
       raise "Falha ao configurar banco tenant: #{e.message}"
     ensure
       conn&.close
+      ActiveRecord::Base.establish_connection(Rails.env.to_sym)
     end
   end
 
