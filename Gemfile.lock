@@ -129,7 +129,7 @@ GEM
     erubi (1.13.1)
     et-orbi (1.2.11)
       tzinfo
-    faker (3.5.1)
+    faker (3.5.2)
       i18n (>= 1.8.11, < 2)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
@@ -366,7 +366,7 @@ DEPENDENCIES
   devise
   devise-jwt
   dotenv-rails
-  faker (~> 3.2)
+  faker (~> 3.5)
   httparty
   kamal
   pagseguro-oficial (= 2.4.0)
