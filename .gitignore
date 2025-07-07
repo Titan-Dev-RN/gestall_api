@@ -34,3 +34,6 @@
 /config/database.yml
 
 estrutura.txt
+
+app/models/informacao_loja.rb
+.ruby-version
