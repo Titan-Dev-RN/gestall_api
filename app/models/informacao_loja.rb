@@ -11,8 +11,17 @@ class InformacaoLoja < ApplicationRecord
 
   after_create :criar_infraestrutura_loja, if: -> { Rails.env.development? || Rails.env.production? }
 
+  validates :nome_da_loja, presence: true, uniqueness: true
+  validates :nome_dono, presence: true
+  validates :forma_de_pagamento, presence: true
+  validates :endereco, :cidade, :estado, presence:true
   validates :cnpj, presence: true, uniqueness: true
-  validates :nome_da_loja, :email, presence: true
+  validates :telefone, presence: true, uniqueness: true
+  validates :email, presence: true, uniqueness: true
+  validates :plano_contratado, presence: true
+  validates :data_vencimento_plano, presence: true
+  
+  
 
   FIXED_DB_CONFIG = {
     dbname: 'postgres',  # Banco padrão para conexão administrativa
@@ -140,7 +149,7 @@ class InformacaoLoja < ApplicationRecord
     pg_config = FIXED_DB_CONFIG.merge(dbname: db_name)
 
     # Verifica se o admin já existe no banco tenant
-    admin_existente = nil
+    admin_existente = errors.add(:base, "Admin já existe")
     begin
       ActiveRecord::Base.establish_connection(
         adapter: 'postgresql',
