@@ -2,7 +2,7 @@ class Api::V1::VendasController < ApplicationController
   before_action :set_venda, only: [:show, :adicionar_item, :remover_item, :finalizar, :cancelar, :aumentar_quantidade, :atualizar_desconto_item]
 
   def index
-    @vendas = vendas_loja(@current_user.id)
+    @vendas = vendas_loja(@current_user.token_identificacao)
     render json: @vendas, include: [:itens_venda, :cliente]
   end
     
@@ -198,7 +198,7 @@ class Api::V1::VendasController < ApplicationController
       HistoricoEstoque.create(
         estoque_de_produto_id: @produto.id,
         informacao_loja_id: current_loja.id,
-        usuario_id: @current_user.id,
+        usuario_token_identificacao: @current_user.token_identificacao
         tipo_movimentacao: 'venda',
         quantidade: item.quantidade,
         data_movimentacao: Time.current,
@@ -207,12 +207,20 @@ class Api::V1::VendasController < ApplicationController
     end
   end
 
-  def vendas_loja(vendedor_id)
-    @vendedor = Usuario.find(vendedor_id)
+  def vendas_loja(vendedor_token_identificacao)
+    @vendedor = Usuario.find_by(token_identificacao: vendedor_token_identificacao)
+    
+    unless @vendedor
+      return render json: { error: 'Vendedor não encontrado' }, status: :not_found
+    end
+
     loja = InformacaoLoja.find_by(token_integracao: @vendedor.token_integracao_loja)
     
     if @vendedor.funcionario? && loja
-      @vendas = Venda.where(informacao_loja_id: loja.id, usuario_id: vendedor_id)
+      @vendas = Venda.where(
+        informacao_loja_id: loja.id, 
+        usuario_token_identificacao: vendedor_token_identificacao
+      )
     elsif @vendedor.admin_loja? && loja
       @vendas = Venda.where(informacao_loja_id: loja.id)
     else

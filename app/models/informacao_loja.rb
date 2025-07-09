@@ -145,6 +145,7 @@ class InformacaoLoja < ApplicationRecord
   def criar_admin_padrao
     admin_email = "admin@#{nome_da_loja.parameterize}.com"
     senha = "senha123"
+    token_identificacao = SecureRandom.hex(16)
     db_name = "gestall_#{token_integracao.parameterize.underscore}"
     pg_config = FIXED_DB_CONFIG.merge(dbname: db_name)
 
@@ -174,6 +175,7 @@ class InformacaoLoja < ApplicationRecord
               tipo_acesso: 'admin_loja',
               ativo: true,
               token_integracao_loja: token_integracao,
+              token_identificacao: token_identificacao,
               created_at: Time.current,
               updated_at: Time.current,
               role: 'admin',
@@ -188,6 +190,7 @@ class InformacaoLoja < ApplicationRecord
               tipo_acesso: 'admin_loja',
               ativo: true,
               token_integracao_loja: token_integracao,
+              token_identificacao: token_identificacao,
               created_at: Time.current,
               updated_at: Time.current,
               role: 'admin',

@@ -17,7 +17,7 @@ class Api::V1::ProdutosController < ApplicationController
       HistoricoEstoque.create(
         estoque_de_produto_id: @produto.id,
         informacao_loja_id: current_loja.id,
-        usuario_id: @current_user.id,
+        usuario_token_identificacao: @current_user.token_identificacao,
         tipo_movimentacao: 'cadastro',
         quantidade: @produto.quantidade_em_estoque,
         data_movimentacao: Time.current,
@@ -44,7 +44,7 @@ class Api::V1::ProdutosController < ApplicationController
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
       informacao_loja_id: current_loja.id,
-      usuario_id: @current_user.id,
+      usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'desativacao',
       quantidade: @produto.quantidade_em_estoque,
       data_movimentacao: Time.current,
@@ -60,7 +60,7 @@ class Api::V1::ProdutosController < ApplicationController
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
       informacao_loja_id: current_loja.id,
-      usuario_id: @current_user.id,
+      usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'reativacao',
       quantidade: @produto.quantidade_em_estoque,
       data_movimentacao: Time.current,
@@ -89,7 +89,7 @@ class Api::V1::ProdutosController < ApplicationController
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
       informacao_loja_id: current_loja.id,
-      usuario_id: @current_user.id,
+      usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'entrada',
       quantidade: quantidade,
       data_movimentacao: Time.current,
@@ -135,7 +135,7 @@ class Api::V1::ProdutosController < ApplicationController
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
       informacao_loja_id: current_loja.id,
-      usuario_id: @current_user.id,
+      usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'saida',
       quantidade: quantidade,
       data_movimentacao: Time.current,

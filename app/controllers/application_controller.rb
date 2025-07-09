@@ -131,7 +131,7 @@ class ApplicationController < ActionController::API
         { algorithm: 'HS256', verify_expiration: true }
       )
       
-      @current_user = Usuario.find(decoded.first['sub'])
+      @current_user = Usuario.find_by(token_identificacao: decoded.first['sub'])
 
     rescue JWT::ExpiredSignature
       render json: { error: 'Token expirado' }, status: :unauthorized
