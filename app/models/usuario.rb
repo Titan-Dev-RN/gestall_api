@@ -19,6 +19,7 @@ class Usuario < ApplicationRecord
   has_many :vendas, foreign_key: 'usuario_id'
   has_many :historicos_estoque, foreign_key: 'usuario_id'
 
+
   enum :tipo_acesso, {
     super_admin: "super_admin",
     admin_loja: "admin_loja", 
