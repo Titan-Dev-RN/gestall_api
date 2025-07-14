@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_25_115134) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_14_142344) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -35,7 +35,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_25_115134) do
   end
 
   create_table "clientes", force: :cascade do |t|
-    t.bigint "informacao_loja_id", null: false
     t.string "nome"
     t.string "cpf_cnpj"
     t.string "telefone"
@@ -45,7 +44,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_25_115134) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "ativo", default: true
-    t.index ["informacao_loja_id"], name: "index_clientes_on_informacao_loja_id"
+    t.string "informacao_loja_token"
+    t.index ["informacao_loja_token"], name: "index_clientes_on_informacao_loja_token"
   end
 
   create_table "estoque_de_produtos", force: :cascade do |t|
@@ -119,9 +119,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_25_115134) do
     t.text "observacao"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "usuario_id"
+    t.string "usuario_token_identificacao"
     t.index ["estoque_de_produto_id"], name: "index_historico_estoques_on_estoque_de_produto_id"
     t.index ["informacao_loja_id"], name: "index_historico_estoques_on_informacao_loja_id"
+    t.index ["usuario_token_identificacao"], name: "index_historico_estoques_on_usuario_token_identificacao"
   end
 
   create_table "informacao_lojas", force: :cascade do |t|
@@ -232,13 +233,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_25_115134) do
     t.string "unlock_token"
     t.boolean "ativo", default: true
     t.string "token_integracao_loja"
+    t.string "token_identificacao", null: false
     t.index ["email"], name: "index_usuarios_on_email", unique: true
     t.index ["reset_password_token"], name: "index_usuarios_on_reset_password_token", unique: true
+    t.index ["token_identificacao"], name: "index_usuarios_on_token_identificacao", unique: true
     t.index ["token_integracao_loja"], name: "index_usuarios_on_token_integracao_loja"
   end
 
   create_table "vendas", force: :cascade do |t|
-    t.bigint "informacao_loja_id", null: false
     t.bigint "cliente_id"
     t.datetime "data_venda"
     t.decimal "valor_total"
@@ -248,14 +250,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_25_115134) do
     t.text "observacoes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "usuario_id"
+    t.string "usuario_token_identificacao"
+    t.string "informacao_loja_token"
     t.index ["cliente_id"], name: "index_vendas_on_cliente_id"
-    t.index ["informacao_loja_id"], name: "index_vendas_on_informacao_loja_id"
+    t.index ["informacao_loja_token"], name: "index_vendas_on_informacao_loja_token"
+    t.index ["usuario_token_identificacao"], name: "index_vendas_on_usuario_token_identificacao"
   end
 
   add_foreign_key "assinaturas", "informacao_lojas"
   add_foreign_key "assinaturas", "planos"
-  add_foreign_key "clientes", "informacao_lojas"
   add_foreign_key "estoque_de_produtos", "categorias", column: "categoria_do_produto"
   add_foreign_key "estoque_de_produtos", "fornecedors"
   add_foreign_key "estoque_de_produtos", "informacao_lojas"
@@ -264,7 +267,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_25_115134) do
   add_foreign_key "funcionarios", "usuarios"
   add_foreign_key "historico_estoques", "estoque_de_produtos"
   add_foreign_key "historico_estoques", "informacao_lojas"
-  add_foreign_key "historico_estoques", "usuarios"
+  add_foreign_key "historico_estoques", "usuarios", column: "usuario_token_identificacao", primary_key: "token_identificacao", on_delete: :nullify
   add_foreign_key "item_vendas", "estoque_de_produtos"
   add_foreign_key "item_vendas", "vendas"
   add_foreign_key "nota_fiscals", "informacao_lojas"
@@ -273,6 +276,4 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_25_115134) do
   add_foreign_key "usuario_permissaos", "permissaos"
   add_foreign_key "usuario_permissaos", "usuarios"
   add_foreign_key "vendas", "clientes"
-  add_foreign_key "vendas", "informacao_lojas"
-  add_foreign_key "vendas", "usuarios"
 end
