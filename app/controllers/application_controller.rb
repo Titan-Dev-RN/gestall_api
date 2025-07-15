@@ -88,6 +88,18 @@ class ApplicationController < ActionController::API
     ActiveRecord::Base.establish_connection(config)
   end
 
+  # Adicionar um around_action para garantir a restauração da conexão
+  around_action :ensure_main_db_connection
+
+  def ensure_main_db_connection
+    yield
+  ensure
+    if ActiveRecord::Base.connection_db_config.database != Rails.configuration.database_configuration[Rails.env]['database']
+      ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+      Rails.logger.debug "Conexão restaurada para o banco principal (ApplicationController)"
+    end
+  end
+
   def verificar_loja_ativa
     return unless @current_user
     return if @current_user.super_admin?
