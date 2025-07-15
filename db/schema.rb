@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_14_142344) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_15_010003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -55,7 +55,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_14_142344) do
     t.integer "quantidade_em_estoque"
     t.integer "quantidade_minima"
     t.integer "quantidade_maxima"
-    t.decimal "preco_de_venda"
+    t.integer "preco_de_venda"
     t.datetime "ultima_atualizacao"
     t.datetime "data_de_entrada"
     t.datetime "data_de_cadastro"
@@ -95,8 +95,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_14_142344) do
     t.string "rg"
     t.date "data_nascimento"
     t.string "cargo"
-    t.decimal "salario_base"
-    t.decimal "comissao_percentual"
+    t.integer "salario_base"
+    t.integer "comissao_percentual"
     t.date "data_admissao"
     t.date "data_demissao"
     t.text "endereco"
@@ -148,9 +148,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_14_142344) do
     t.bigint "venda_id", null: false
     t.bigint "estoque_de_produto_id", null: false
     t.integer "quantidade"
-    t.decimal "valor_unitario"
-    t.decimal "desconto"
-    t.decimal "valor_total"
+    t.integer "valor_unitario"
+    t.integer "desconto"
+    t.integer "valor_total"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["estoque_de_produto_id"], name: "index_item_vendas_on_estoque_de_produto_id"
@@ -183,7 +183,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_14_142344) do
   create_table "planos", force: :cascade do |t|
     t.string "nome"
     t.text "descricao"
-    t.decimal "valor_mensal"
+    t.integer "valor_mensal"
     t.text "recursos"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -191,7 +191,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_14_142344) do
 
   create_table "transacao_pagamentos", force: :cascade do |t|
     t.bigint "assinatura_id", null: false
-    t.decimal "valor"
+    t.integer "valor"
     t.datetime "data_transacao"
     t.string "status"
     t.string "metodo_pagamento"
@@ -243,8 +243,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_14_142344) do
   create_table "vendas", force: :cascade do |t|
     t.bigint "cliente_id"
     t.datetime "data_venda"
-    t.decimal "valor_total"
-    t.decimal "desconto"
+    t.integer "valor_total"
+    t.integer "desconto"
     t.string "status"
     t.string "forma_pagamento"
     t.text "observacoes"
