@@ -80,6 +80,9 @@ GEM
     aitch (2.0.0)
       nokogiri
     ast (2.4.3)
+    audited (5.8.0)
+      activerecord (>= 5.2, < 8.2)
+      activesupport (>= 5.2, < 8.2)
     base64 (0.3.0)
     bcrypt (3.1.20)
     bcrypt_pbkdf (1.1.1)
@@ -362,6 +365,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_model_serializers
+  audited
   bcrypt (~> 3.1.7)
   bootsnap
   brakeman
