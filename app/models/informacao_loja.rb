@@ -149,7 +149,6 @@ class InformacaoLoja < ApplicationRecord
     end
   end
 
-
   def criar_admin_padrao(senha, senha_confirmacao)
     admin_email = "admin@#{nome_da_loja.parameterize}.com"
     token_identificacao = SecureRandom.hex(16)
