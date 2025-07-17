@@ -9,7 +9,7 @@ class Api::V1::ProdutosController < ApplicationController
   def show
     render json: @produto.as_json.merge(nivel_permissao: @current_user.tipo_acesso)
   end
-  # POST /api/v1/produtos
+
   def create
     @produto = current_loja.estoque_produtos.new(produto_params)
     @produto.fornecedor_id ||= nil
@@ -29,7 +29,6 @@ class Api::V1::ProdutosController < ApplicationController
     end
   end
 
-  # PATCH/PUT /api/v1/produtos/1
   def update
     if @produto.update(produto_params)
       render json: @produto
@@ -38,7 +37,6 @@ class Api::V1::ProdutosController < ApplicationController
     end
   end
 
-  # DELETE /api/v1/produtos/1
   def destroy
     @produto.update(ativo: false)
     HistoricoEstoque.create(
@@ -69,7 +67,6 @@ class Api::V1::ProdutosController < ApplicationController
     render json: { message: 'produto reativado com sucesso'}, status: :ok
   end
 
-  # GET /api/v1/produtos/baixo_estoque
   def baixo_estoque
     @produtos = current_loja.estoque_produtos.where('quantidade_em_estoque < quantidade_minima')
     render json: @produtos
@@ -150,7 +147,6 @@ class Api::V1::ProdutosController < ApplicationController
   end
 
   private
-
 
   def set_produto
     @produto = EstoqueDeProduto.find_by(

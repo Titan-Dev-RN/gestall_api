@@ -38,8 +38,7 @@ class Api::V1::VendasController < ApplicationController
       render json: @venda.errors, status: :unprocessable_entity
     end
   end
-    
-  # POST /api/v1/vendas/1/adicionar_item
+
   def adicionar_item
     codigo_de_barras = params[:codigo_barras]
     produto = @current_user.informacao_loja.estoque_produtos.find_by(codigo_barras: codigo_de_barras)
@@ -129,7 +128,7 @@ class Api::V1::VendasController < ApplicationController
     render json: item.errors, status: :unprocessable_entity
     end
   end
-  #DELETE api/v1/vendas/:venda_id/remover_item/:item_id
+
   def remover_item
     item = @venda.itens_venda.find_by(id: params[:item_id])
     
@@ -144,8 +143,7 @@ class Api::V1::VendasController < ApplicationController
     render json: { error: 'Erro ao remover item' }, status: :unprocessable_entity
     end
   end
-  
-  # POST /api/v1/vendas/1/finalizar
+
   def finalizar
     if params[:forma_pagamento] == nil
       render json: { error: 'Forma de pagamento não informada' }, status: :unprocessable_entity and return
@@ -164,7 +162,6 @@ class Api::V1::VendasController < ApplicationController
     end
   end
   
-
   def cancelar
     if @venda.update(status: 'cancelada')
       render json: @venda

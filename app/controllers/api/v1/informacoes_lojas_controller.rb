@@ -1,18 +1,15 @@
 class Api::V1::InformacoesLojasController < ApplicationController
   before_action :set_loja, only: [ :show, :update, :destroy, :reativar ]
 
-  # GET /api/v1/informacoes_lojas
   def index
     @lojas = InformacaoLoja.all
     render json: @lojas, status: :ok
   end
 
-  # GET /api/v1/informacoes_lojas/1
   def show
     render json: @loja
   end
 
-  # POST /api/v1/informacoes_lojas
   def create
     usuario_params = params.dig(:informacao_loja, :usuario) || {}
 
@@ -61,7 +58,6 @@ class Api::V1::InformacoesLojasController < ApplicationController
     end
   end
 
-  # PATCH/PUT /api/v1/informacoes_lojas/1
   def update
     if @loja.update(loja_params)
       render json: @loja
@@ -70,13 +66,11 @@ class Api::V1::InformacoesLojasController < ApplicationController
     end
   end
 
-  # DELETE /api/v1/informacoes_lojas/1
   def destroy
     @loja.update(ativo: false)
     render json: { message: "Loja desativada com sucesso" }, status: :ok
   end
 
-  # POST /api/v1/informacoes_lojas/1/reativar
   def reativar
     @loja.update(ativo: true)
     render json: { message: "Loja reativada com sucesso" }, status: :ok

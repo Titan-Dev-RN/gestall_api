@@ -1,7 +1,6 @@
 class Api::V1::FuncionariosController < ApplicationController
   before_action :set_funcionario, only: [:show, :update, :destroy]
 
-  # GET /api/v1/funcionarios
   def index
     funcionarios = Funcionario.where(
       informacao_loja_token: @current_user.token_integracao_loja
@@ -10,12 +9,10 @@ class Api::V1::FuncionariosController < ApplicationController
     render json: funcionarios, include: [:usuario]
   end
 
-  # GET /api/v1/funcionarios/:id
   def show
     render json: @funcionario, include: [:usuario]
   end
 
-  # POST /api/v1/funcionarios
   def create
     ActiveRecord::Base.transaction do
       # Cria primeiro o funcionário base
@@ -57,7 +54,6 @@ class Api::V1::FuncionariosController < ApplicationController
     end
   end
 
-  # PATCH/PUT /api/v1/funcionarios/:id
   def update
     ActiveRecord::Base.transaction do
       if @funcionario.update(funcionario_params.except(:criar_usuario))
@@ -77,7 +73,6 @@ class Api::V1::FuncionariosController < ApplicationController
     end
   end
 
-  # DELETE /api/v1/funcionarios/:id
   def destroy
     ActiveRecord::Base.transaction do
       @funcionario.usuario&.update(ativo: false) # Desativa usuário se existir
@@ -87,7 +82,6 @@ class Api::V1::FuncionariosController < ApplicationController
   end
 
   private
-
 
   def set_funcionario
     @funcionario = Funcionario.find_by(

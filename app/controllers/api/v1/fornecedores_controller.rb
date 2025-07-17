@@ -1,18 +1,15 @@
 class Api::V1::FornecedoresController < ApplicationController
   before_action :set_fornecedor, only: [:show, :update, :destroy, :reativar_fornecedor]
 
-  
   def index
     fornecedores = Fornecedor.where(informacao_loja_token: @current_user.token_integracao_loja)
     render json: fornecedores
   end
-  
-  # GET /api/v1/fornecedores/:id
+
   def show
     render json: @fornecedor
   end
 
-  # POST /api/v1/fornecedores
   def create
     fornecedor = Fornecedor.new(fornecedor_params)
     fornecedor.informacao_loja = @current_user.informacao_loja
@@ -24,7 +21,6 @@ class Api::V1::FornecedoresController < ApplicationController
     end
   end
 
-  # PUT /api/v1/fornecedores/:id
   def update
     if @fornecedor.update(fornecedor_params)
       render json: @fornecedor
@@ -33,7 +29,6 @@ class Api::V1::FornecedoresController < ApplicationController
     end
   end
 
-  # DELETE /api/v1/fornecedores/:id
   def destroy
     @fornecedor.update(ativo: false)
     render json: { message: 'Fornecedor desativado com sucesso'}, status: :ok
