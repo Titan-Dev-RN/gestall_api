@@ -33,7 +33,7 @@ class InformacaoLoja < ApplicationRecord
   }.freeze
 
   def estoque_produtos
-    EstoqueDeProduto.where(informacao_loja_id: id)
+    EstoqueDeProduto.where(informacao_loja_token: token_integracao)
   end
 
   # def criar_infraestrutura_loja

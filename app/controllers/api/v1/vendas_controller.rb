@@ -201,13 +201,13 @@ class Api::V1::VendasController < ApplicationController
       produto.decrement!(:quantidade_em_estoque, item.quantidade)
       
       HistoricoEstoque.create(
-        estoque_de_produto_token: produto.token_identificacao,
+        estoque_de_produto_id: produto.id,
         informacao_loja_token: @current_user.token_integracao_loja,
         usuario_token_identificacao: @current_user.token_identificacao,
         tipo_movimentacao: 'venda',
         quantidade: item.quantidade,
         data_movimentacao: Time.current,
-        observacao: "Venda ##{@venda.token_identificacao} - #{item.quantidade} unidades vendidas"
+        observacao: "Venda ##{@venda.id} - #{item.quantidade} unidades vendidas"
       )
     end
   end

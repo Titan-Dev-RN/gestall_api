@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_15_010003) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_17_103001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -49,7 +49,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_15_010003) do
   end
 
   create_table "estoque_de_produtos", force: :cascade do |t|
-    t.bigint "informacao_loja_id", null: false
     t.string "nome_do_produto"
     t.string "tipo_do_produto"
     t.integer "quantidade_em_estoque"
@@ -69,12 +68,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_15_010003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "categoria_do_produto"
+    t.string "informacao_loja_token"
     t.index ["fornecedor_id"], name: "index_estoque_de_produtos_on_fornecedor_id"
-    t.index ["informacao_loja_id"], name: "index_estoque_de_produtos_on_informacao_loja_id"
+    t.index ["informacao_loja_token"], name: "index_estoque_de_produtos_on_informacao_loja_token"
   end
 
   create_table "fornecedors", force: :cascade do |t|
-    t.bigint "informacao_loja_id", null: false
     t.string "nome"
     t.string "cnpj"
     t.string "contato"
@@ -85,11 +84,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_15_010003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "ativo", default: true
-    t.index ["informacao_loja_id"], name: "index_fornecedors_on_informacao_loja_id"
+    t.string "informacao_loja_token"
+    t.index ["informacao_loja_token"], name: "index_fornecedors_on_informacao_loja_token"
   end
 
   create_table "funcionarios", force: :cascade do |t|
-    t.bigint "informacao_loja_id", null: false
     t.string "nome"
     t.string "cpf"
     t.string "rg"
@@ -107,12 +106,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_15_010003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "usuario_id"
-    t.index ["informacao_loja_id"], name: "index_funcionarios_on_informacao_loja_id"
+    t.string "informacao_loja_token"
+    t.index ["informacao_loja_token"], name: "index_funcionarios_on_informacao_loja_token"
   end
 
   create_table "historico_estoques", force: :cascade do |t|
     t.bigint "estoque_de_produto_id", null: false
-    t.bigint "informacao_loja_id", null: false
     t.string "tipo_movimentacao"
     t.integer "quantidade"
     t.datetime "data_movimentacao"
@@ -120,8 +119,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_15_010003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "usuario_token_identificacao"
+    t.string "informacao_loja_token"
     t.index ["estoque_de_produto_id"], name: "index_historico_estoques_on_estoque_de_produto_id"
-    t.index ["informacao_loja_id"], name: "index_historico_estoques_on_informacao_loja_id"
+    t.index ["informacao_loja_token"], name: "index_historico_estoques_on_informacao_loja_token"
     t.index ["usuario_token_identificacao"], name: "index_historico_estoques_on_usuario_token_identificacao"
   end
 
@@ -261,12 +261,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_15_010003) do
   add_foreign_key "assinaturas", "planos"
   add_foreign_key "estoque_de_produtos", "categorias", column: "categoria_do_produto"
   add_foreign_key "estoque_de_produtos", "fornecedors"
-  add_foreign_key "estoque_de_produtos", "informacao_lojas"
-  add_foreign_key "fornecedors", "informacao_lojas"
-  add_foreign_key "funcionarios", "informacao_lojas"
   add_foreign_key "funcionarios", "usuarios"
   add_foreign_key "historico_estoques", "estoque_de_produtos"
-  add_foreign_key "historico_estoques", "informacao_lojas"
   add_foreign_key "historico_estoques", "usuarios", column: "usuario_token_identificacao", primary_key: "token_identificacao", on_delete: :nullify
   add_foreign_key "item_vendas", "estoque_de_produtos"
   add_foreign_key "item_vendas", "vendas"

@@ -4,7 +4,7 @@ class Api::V1::FuncionariosController < ApplicationController
   # GET /api/v1/funcionarios
   def index
     funcionarios = Funcionario.where(
-      informacao_loja_id: current_tenant.id
+      informacao_loja_token: @current_user.token_integracao_loja
     ).includes(:usuario)
     
     render json: funcionarios, include: [:usuario]
@@ -20,7 +20,7 @@ class Api::V1::FuncionariosController < ApplicationController
     ActiveRecord::Base.transaction do
       # Cria primeiro o funcionário base
       @funcionario = Funcionario.new(funcionario_params.except(:criar_usuario))
-      @funcionario.informacao_loja_id = current_tenant.id
+      @funcionario.informacao_loja_token = current_tenant.id
       @funcionario.ativo = true
       @funcionario.data_admissao ||= Date.current
 
@@ -92,7 +92,7 @@ class Api::V1::FuncionariosController < ApplicationController
   def set_funcionario
     @funcionario = Funcionario.find_by(
       id: params[:id], 
-      informacao_loja_id: current_tenant.id
+      informacao_loja_token: @current_user.token_integracao_loja
     )
     render json: { error: 'Funcionário não encontrado' }, status: :not_found unless @funcionario
   end

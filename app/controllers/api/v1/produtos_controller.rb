@@ -16,7 +16,7 @@ class Api::V1::ProdutosController < ApplicationController
     if @produto.save
       HistoricoEstoque.create(
         estoque_de_produto_id: @produto.id,
-        informacao_loja_id: current_loja.id,
+        informacao_loja_token: @current_user.token_integracao_loja,
         usuario_token_identificacao: @current_user.token_identificacao,
         tipo_movimentacao: 'cadastro',
         quantidade: @produto.quantidade_em_estoque,
@@ -43,7 +43,7 @@ class Api::V1::ProdutosController < ApplicationController
     @produto.update(ativo: false)
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
-      informacao_loja_id: current_loja.id,
+      informacao_loja_token: @current_user.token_integracao_loja,
       usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'desativacao',
       quantidade: @produto.quantidade_em_estoque,
@@ -59,7 +59,7 @@ class Api::V1::ProdutosController < ApplicationController
 
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
-      informacao_loja_id: current_loja.id,
+      informacao_loja_token: @current_user.token_integracao_loja,
       usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'reativacao',
       quantidade: @produto.quantidade_em_estoque,
@@ -88,7 +88,7 @@ class Api::V1::ProdutosController < ApplicationController
     
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
-      informacao_loja_id: current_loja.id,
+      informacao_loja_token: @current_user.token_integracao_loja,
       usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'entrada',
       quantidade: quantidade,
@@ -134,7 +134,7 @@ class Api::V1::ProdutosController < ApplicationController
     
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
-      informacao_loja_id: current_loja.id,
+      informacao_loja_token: @current_user.token_integracao_loja,
       usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'saida',
       quantidade: quantidade,
@@ -153,7 +153,11 @@ class Api::V1::ProdutosController < ApplicationController
 
 
   def set_produto
-    @produto = current_loja.estoque_produtos.find(params[:id])
+    @produto = EstoqueDeProduto.find_by(
+      id: params[:id],
+      informacao_loja_token: @current_user.token_integracao_loja
+    )
+    render json: { error: 'Produto não encontrado' }, status: :not_found unless @produto
   end
 
   def current_loja
