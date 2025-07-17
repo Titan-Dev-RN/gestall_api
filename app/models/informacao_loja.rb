@@ -12,6 +12,9 @@ class InformacaoLoja < ApplicationRecord
   #controller responsavel
   # after_create :criar_infraestrutura_loja, if: -> { Rails.env.development? || Rails.env.production? }
 
+  audited
+  has_associated_audits #:usuarios, :funcionarios, :estoquedeprodutos, :fornecedores, :clientes, :vendas, :assinaturas, :notas_fiscais, :transacoes_pagamento
+
   validates :nome_da_loja, presence: true, uniqueness: true
   validates :nome_dono, presence: true
   validates :forma_de_pagamento, presence: true

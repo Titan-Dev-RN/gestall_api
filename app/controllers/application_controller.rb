@@ -7,7 +7,7 @@ class ApplicationController < ActionController::API
   before_action :verificar_loja_ativa, unless: -> { auth_whitelist? }
   before_action :switch_to_tenant_database
   before_action :verificar_permissao, unless: -> { auth_whitelist? || permissao_whitelist? }
-
+  before_action :set_audited_user
 
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from ActiveRecord::RecordInvalid, with: :invalid_record
@@ -197,6 +197,10 @@ class ApplicationController < ActionController::API
     (controller_name == 'informacoes_lojas' && action_name == 'create')
   end
   
+  def set_audited_user
+    Audited.current_user = @current_user
+  end
+
   def not_found
     render json: { error: 'Registro não encontrado' }, status: :not_found
   end
@@ -208,4 +212,5 @@ class ApplicationController < ActionController::API
   def invalid_token
     render json: { error: 'Token JWT inválido' }, status: :unauthorized
   end
+
 end
