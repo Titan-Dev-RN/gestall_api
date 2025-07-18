@@ -197,8 +197,12 @@ class ApplicationController < ActionController::API
     (controller_name == 'informacoes_lojas' && action_name == 'create')
   end
   
+  def current_user
+    @current_user
+  end
+
   def set_audited_user
-    Audited.current_user = @current_user
+    Audited.current_user_method = :current_user
   end
 
   def not_found
