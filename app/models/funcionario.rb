@@ -4,6 +4,6 @@ class Funcionario < ApplicationRecord
   
   has_many :vendas, foreign_key: 'id_usuario'
 
-  audited associated_with: [:informacao_loja, :usuario]
+  audited associated_with: :informacao_loja
   has_associated_audits #:vendas
 end

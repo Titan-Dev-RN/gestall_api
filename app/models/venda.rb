@@ -7,7 +7,7 @@ class Venda < ApplicationRecord
   has_many :estoque_de_produtos, through: :itens_venda
   has_one :nota_fiscal
 
-  audited associated_with: [:informacao_loja, :cliente, :usuario, :nota_fiscal]
+  audited associated_with: :informacao_loja
   has_associated_audits #:itens_venda, :estoque_de_produtos, :nota_fiscal
 
 

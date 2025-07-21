@@ -3,5 +3,5 @@ class HistoricoEstoque < ApplicationRecord
   belongs_to :informacao_loja
   belongs_to :usuario, foreign_key: 'usuario_token_identificacao', primary_key: 'token_identificacao', optional: true
 
-  audited associated_with: [:estoque_de_produto, :informacao_loja, :usuario]
+  audited associated_with: :estoque_de_produto
 end

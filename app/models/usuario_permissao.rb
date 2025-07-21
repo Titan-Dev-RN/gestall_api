@@ -4,5 +4,5 @@ class UsuarioPermissao < ApplicationRecord
 
   validates :usuario_id, uniqueness: { scope: :permissao_id }
 
-  audited associated_with: [:usuario, :permissao]
+  audited associated_with: :usuario
 end

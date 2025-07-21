@@ -20,7 +20,7 @@ class Usuario < ApplicationRecord
   has_many :historicos_estoque, foreign_key: 'usuario_id'
 
   audited except: [:encrypted_password, :token_integracao_loja]
-  audited associated_with: [:informacao_loja, :funcionario]
+  audited associated_with: :informacao_loja
   has_associated_audits #:usuarios_permissoes, :permissoes, :vendas, :historicos_estoque
 
   enum :tipo_acesso, {

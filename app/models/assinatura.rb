@@ -4,6 +4,6 @@ class Assinatura < ApplicationRecord
   
   has_many :transacoes_pagamento
 
-  audited associated_with: [:informacao_loja, :plano]
+  audited associated_with: :informacao_loja
   has_associated_audits #:transacoes_pagamento
 end
