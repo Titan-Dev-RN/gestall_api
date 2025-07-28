@@ -143,7 +143,7 @@ end
     tipo_acesso: 'funcionario',
     ativo: true,
     token_integracao_loja: current_tenant.token_integracao,
-    token_identificacao: token_identificacao,
+    token_identificacao: token_identificacao, # Esta é a coluna correta
     id_funcionario: funcionario.id
   )
 
@@ -158,13 +158,13 @@ end
     tipo_acesso: 'funcionario',
     ativo: true,
     token_integracao_loja: current_tenant.token_integracao,
-    token_identificacao: token_identificacao,
+    token_identificacao: token_identificacao, # Mesmo valor aqui
     id_funcionario: funcionario.id
   )
 
-  # 3. Finalmente atualiza o funcionário com a referência
+  # 3. ATUALIZAÇÃO CORRETA - usa usuario_token_identificacao que referencia token_identificacao
   funcionario.update!(
-    usuario_id: tenant_user.id,
+    usuario_token_identificacao: token_identificacao, # Coluna que existe em funcionarios
     email: email
   )
 rescue => e

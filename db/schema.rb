@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_17_103001) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_28_134801) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -127,7 +127,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_17_103001) do
     t.text "observacoes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "usuario_token_identificacao"
+    t.string "usuario_token_identificacao"
     t.string "informacao_loja_token"
     t.index ["informacao_loja_token"], name: "index_funcionarios_on_informacao_loja_token"
     t.index ["usuario_token_identificacao"], name: "index_funcionarios_on_usuario_token_identificacao"
@@ -284,7 +284,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_17_103001) do
   add_foreign_key "assinaturas", "planos"
   add_foreign_key "estoque_de_produtos", "categorias", column: "categoria_do_produto"
   add_foreign_key "estoque_de_produtos", "fornecedors"
-  add_foreign_key "funcionarios", "usuarios", column: "usuario_token_identificacao"
+  add_foreign_key "funcionarios", "usuarios", column: "usuario_token_identificacao", primary_key: "token_identificacao", name: "fk_funcionarios_usuarios_on_token_identificacao"
   add_foreign_key "historico_estoques", "estoque_de_produtos"
   add_foreign_key "historico_estoques", "usuarios", column: "usuario_token_identificacao", primary_key: "token_identificacao", on_delete: :nullify
   add_foreign_key "item_vendas", "estoque_de_produtos"
