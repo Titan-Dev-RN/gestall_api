@@ -12,7 +12,7 @@ class Api::V1::FornecedoresController < ApplicationController
 
   def create
     fornecedor = Fornecedor.new(fornecedor_params)
-    fornecedor.informacao_loja = @current_user.informacao_loja
+    fornecedor.informacao_loja_token = @current_user.token_integracao_loja
 
     if fornecedor.save
       render json: fornecedor, status: :created
