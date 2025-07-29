@@ -55,6 +55,7 @@ class ApplicationController < ActionController::API
       adicionar_estoque: 'produto_adicionar_quantidade',
       remover_estoque: 'produto_remover_quantidade',
       criar_categoria: 'produto_cadastrar_categoria',
+      categorias: 'produto_visualizar_categorias',
       baixo_estoque: 'produto_visualizar_estoque'
     },
     vendas: {

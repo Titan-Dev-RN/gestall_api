@@ -100,6 +100,11 @@ class Api::V1::ProdutosController < ApplicationController
     }, status: :ok
   end
 
+  def categorias 
+    @categorias = Categoria.all
+    render json: @categorias
+  end
+
   def criar_categoria
     @categoria = Categoria.new(categoria_params)
     if @categoria.save
