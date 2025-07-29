@@ -29,10 +29,10 @@ class InformacaoLoja < ApplicationRecord
 
   FIXED_DB_CONFIG = {
     dbname: "postgres",  # Banco padrão para conexão administrativa
-    user: "postgres",    # Usuário do PostgreSQL
-    password: "1234",    # Senha
-    host: "localhost",   # Endereço
-    port: 5432           # Porta
+    user: ENV.fetch('JWT_SECRET'),    # Usuário do PostgreSQL
+    password: ENV.fetch('DB_PASSWORD'),    # Senha
+    host: ENV.fetch('DB_HOST'),   # Endereço
+    port: ENV.fetch('DB_PORT')     # Porta
   }.freeze
 
   def estoque_produtos
