@@ -34,3 +34,4 @@
 /config/database.yml
 db/backups
 estrutura.txt
+.ruby-version
