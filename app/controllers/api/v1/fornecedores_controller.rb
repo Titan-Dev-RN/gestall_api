@@ -2,21 +2,17 @@ class Api::V1::FornecedoresController < ApplicationController
   before_action :set_fornecedor, only: [:show, :update, :destroy, :reativar_fornecedor]
 
   def index
-    fornecedores = Fornecedor.where(
-      informacao_loja_id: InformacaoLoja.find_by(token_integracao: @current_user.token_integracao_loja)&.id
-    )
+    fornecedores = Fornecedor.where(informacao_loja_token: @current_user.token_integracao_loja)
     render json: fornecedores
   end
-  
-  # GET /api/v1/fornecedores/:id
+
   def show
     render json: @fornecedor
   end
 
-  # POST /api/v1/fornecedores
   def create
     fornecedor = Fornecedor.new(fornecedor_params)
-    fornecedor.informacao_loja = @current_user.informacao_loja
+    fornecedor.informacao_loja_token = @current_user.token_integracao_loja
 
     if fornecedor.save
       render json: fornecedor, status: :created
@@ -25,7 +21,6 @@ class Api::V1::FornecedoresController < ApplicationController
     end
   end
 
-  # PUT /api/v1/fornecedores/:id
   def update
     if @fornecedor.update(fornecedor_params)
       render json: @fornecedor
@@ -34,7 +29,6 @@ class Api::V1::FornecedoresController < ApplicationController
     end
   end
 
-  # DELETE /api/v1/fornecedores/:id
   def destroy
     @fornecedor.update(ativo: false)
     render json: { message: 'Fornecedor desativado com sucesso'}, status: :ok
@@ -50,7 +44,7 @@ class Api::V1::FornecedoresController < ApplicationController
   def set_fornecedor
     @fornecedor = Fornecedor.find_by(
       id: params[:id],
-      informacao_loja_id: InformacaoLoja.find_by(token_integracao: @current_user.token_integracao_loja)&.id
+      informacao_loja_token: @current_user.token_integracao_loja
     )
     render json: { error: 'Fornecedor não encontrado' }, status: :not_found unless @fornecedor
   end

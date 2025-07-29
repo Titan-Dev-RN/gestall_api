@@ -1,24 +1,26 @@
 class Api::V1::VendasController < ApplicationController
-  before_action :set_venda, only: [:show, :adicionar_item, :remover_item, :finalizar, :cancelar, :aumentar_quantidade, :atualizar_desconto_item]
+  before_action :set_venda, only: [:show, :adicionar_item, :remover_item, :finalizar, :cancelar, :aumentar_quantidade,
+   :atualizar_desconto_item]
 
   def index
-    @vendas = vendas_loja(@current_user.id)
+    @vendas = vendas_loja(@current_user.token_identificacao)
     render json: @vendas, include: [:itens_venda, :cliente]
   end
     
   def show
     render json: @venda, include: [:itens_venda, :cliente]
   end
-  # GET /api/v1/vendas/vendas_all
+
   def index_all
-    @vendas = Venda.where(informacao_loja_id: @current_user.informacao_loja.id)
+    loja = InformacaoLoja.find_by(token_integracao: @current_user.token_integracao_loja)
+    @vendas = Venda.where(informacao_loja_token: loja.token_integracao)
     render json: @vendas, include: [:itens_venda, :cliente]
   end
-  # POST /api/v1/vendas
+
   def create
     loja = InformacaoLoja.find_by(token_integracao: @current_user.token_integracao_loja)
     
-    @venda = @current_user.vendas.new(
+    @venda = Venda.new(
       cliente_id: params[:cliente_id],
       observacoes: params[:observacoes],
       forma_pagamento: params[:forma_pagamento],
@@ -26,17 +28,17 @@ class Api::V1::VendasController < ApplicationController
       status: 'aberta',
       desconto: 0,
       valor_total: 0,
-      informacao_loja_id: loja.id
+      informacao_loja_token: loja.token_integracao,
+      usuario_token_identificacao: @current_user.token_identificacao
     )
-  
+
     if @venda.save
       render json: @venda, status: :created
     else
       render json: @venda.errors, status: :unprocessable_entity
     end
   end
-    
-  # POST /api/v1/vendas/1/adicionar_item
+
   def adicionar_item
     codigo_de_barras = params[:codigo_barras]
     produto = @current_user.informacao_loja.estoque_produtos.find_by(codigo_barras: codigo_de_barras)
@@ -126,7 +128,7 @@ class Api::V1::VendasController < ApplicationController
     render json: item.errors, status: :unprocessable_entity
     end
   end
-  #DELETE api/v1/vendas/:venda_id/remover_item/:item_id
+
   def remover_item
     item = @venda.itens_venda.find_by(id: params[:item_id])
     
@@ -141,8 +143,7 @@ class Api::V1::VendasController < ApplicationController
     render json: { error: 'Erro ao remover item' }, status: :unprocessable_entity
     end
   end
-  
-  # POST /api/v1/vendas/1/finalizar
+
   def finalizar
     if params[:forma_pagamento] == nil
       render json: { error: 'Forma de pagamento não informada' }, status: :unprocessable_entity and return
@@ -161,7 +162,6 @@ class Api::V1::VendasController < ApplicationController
     end
   end
   
-
   def cancelar
     if @venda.update(status: 'cancelada')
       render json: @venda
@@ -174,12 +174,15 @@ class Api::V1::VendasController < ApplicationController
 
   def set_venda
     loja = InformacaoLoja.find_by(token_integracao: @current_user.token_integracao_loja)
-    @venda = loja.vendas.find(params[:id])
+    @venda = Venda.find_by(
+      id: params[:id],
+      informacao_loja_token: loja.token_integracao
+    )
+    render json: { error: 'Venda não encontrada' }, status: :not_found unless @venda
   end
 
   def venda_params
     params.require(:venda).permit(
-      :cliente,
       :cliente_id, :valor_total, :forma_pagamento,
       itens_venda: [:produto_id, :quantidade, :preco_unitario]
     )
@@ -189,16 +192,15 @@ class Api::V1::VendasController < ApplicationController
     @venda.itens_venda.sum('valor_total') - @venda.desconto.to_f
   end
     
-  
   def atualizar_estoque
     @venda.itens_venda.each do |item|
       produto = item.estoque_de_produto
       produto.decrement!(:quantidade_em_estoque, item.quantidade)
       
       HistoricoEstoque.create(
-        estoque_de_produto_id: @produto.id,
-        informacao_loja_id: current_loja.id,
-        usuario_id: @current_user.id,
+        estoque_de_produto_id: produto.id,
+        informacao_loja_token: @current_user.token_integracao_loja,
+        usuario_token_identificacao: @current_user.token_identificacao,
         tipo_movimentacao: 'venda',
         quantidade: item.quantidade,
         data_movimentacao: Time.current,
@@ -207,14 +209,22 @@ class Api::V1::VendasController < ApplicationController
     end
   end
 
-  def vendas_loja(vendedor_id)
-    @vendedor = Usuario.find(vendedor_id)
+  def vendas_loja(vendedor_token_identificacao)
+    @vendedor = Usuario.find_by(token_identificacao: vendedor_token_identificacao)
+    
+    unless @vendedor
+      return render json: { error: 'Vendedor não encontrado' }, status: :not_found
+    end
+
     loja = InformacaoLoja.find_by(token_integracao: @vendedor.token_integracao_loja)
     
     if @vendedor.funcionario? && loja
-      @vendas = Venda.where(informacao_loja_id: loja.id, usuario_id: vendedor_id)
+      @vendas = Venda.where(
+        informacao_loja_token: loja.token_integracao, 
+        usuario_token_identificacao: vendedor_token_identificacao
+      )
     elsif @vendedor.admin_loja? && loja
-      @vendas = Venda.where(informacao_loja_id: loja.id)
+      @vendas = Venda.where(informacao_loja_token: loja.token_integracao)
     else
       render json: { error: 'Acesso não autorizado' }, status: :forbidden
     end

@@ -32,5 +32,6 @@
 /config/master.key
 
 /config/database.yml
-
+db/backups
 estrutura.txt
+.ruby-version
