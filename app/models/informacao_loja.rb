@@ -29,7 +29,7 @@ class InformacaoLoja < ApplicationRecord
 
   FIXED_DB_CONFIG = {
     dbname: "postgres",  # Banco padrão para conexão administrativa
-    user: ENV.fetch('JWT_SECRET'),    # Usuário do PostgreSQL
+    user: ENV.fetch('DB_USERNAME'),    # Usuário do PostgreSQL
     password: ENV.fetch('DB_PASSWORD'),    # Senha
     host: ENV.fetch('DB_HOST'),   # Endereço
     port: ENV.fetch('DB_PORT')     # Porta
