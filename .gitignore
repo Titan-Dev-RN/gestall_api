@@ -32,8 +32,6 @@
 /config/master.key
 
 /config/database.yml
-
+db/backups
 estrutura.txt
-
-app/models/informacao_loja.rb
 .ruby-version

@@ -3,4 +3,6 @@ class Cliente < ApplicationRecord
   
   has_many :vendas
   
+  audited associated_with: :informacao_loja
+  has_associated_audits #:vendas
 end

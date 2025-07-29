@@ -6,6 +6,7 @@ admin = Usuario.create!(
   password: "senha123",
   password_confirmation: "senha123",
   tipo_acesso: "super_admin",
+  token_identificacao:  SecureRandom.hex(16),
   ativo: true,
   role: "admin"
 )
