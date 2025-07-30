@@ -14,29 +14,29 @@ class Api::V1::FuncionariosController < ApplicationController
   end
 
   def create
-  ActiveRecord::Base.transaction do
-    # 1. Cria o funcionário no tenant database usando o método que funciona
-    tenant_creation = create_in_tenant_db
-    
-    unless tenant_creation[:success]
-      raise ActiveRecord::Rollback, tenant_creation[:error]
-    end
-    
-    @funcionario = tenant_creation[:funcionario]
+    ActiveRecord::Base.transaction do
+      # 1. Cria o funcionário no tenant database usando o método que funciona
+      tenant_creation = create_in_tenant_db
+      
+      unless tenant_creation[:success]
+        raise ActiveRecord::Rollback, tenant_creation[:error]
+      end
+      
+      @funcionario = tenant_creation[:funcionario]
 
-    # 2. Criação de usuário (se necessário)
-    if params[:funcionario][:criar_usuario].to_s.downcase == 'true'
-      create_user_for_funcionario(@funcionario)
-    end
+      # 2. Criação de usuário (se necessário)
+      if params[:funcionario][:criar_usuario].to_s.downcase == 'true'
+        create_user_for_funcionario(@funcionario)
+      end
 
-    render json: @funcionario, status: :created
-  rescue ActiveRecord::Rollback => e
-    render json: { errors: e.message }, status: :unprocessable_entity
-  rescue => e
-    render json: { errors: "Erro ao criar funcionário: #{e.message}" }, 
-           status: :unprocessable_entity
+      render json: @funcionario, status: :created
+    rescue ActiveRecord::Rollback => e
+      render json: { errors: e.message }, status: :unprocessable_entity
+    rescue => e
+      render json: { errors: "Erro ao criar funcionário: #{e.message}" }, 
+            status: :unprocessable_entity
+    end
   end
-end
 
   def update
     ActiveRecord::Base.transaction do
@@ -128,53 +128,53 @@ end
   end
 
   def create_user_for_funcionario(funcionario)
-  email = params[:funcionario][:email] || funcionario.email
-  password = params[:funcionario][:password] || SecureRandom.hex(8)
-  token_identificacao = SecureRandom.uuid # Gerando UUID no formato correto
+    email = params[:funcionario][:email] || funcionario.email
+    password = params[:funcionario][:password] || SecureRandom.hex(8)
+    token_identificacao = SecureRandom.uuid # Gerando UUID no formato correto
 
-  # 1. Primeiro cria o usuário no banco principal
-  ActiveRecord::Base.establish_connection(Rails.env.to_sym)
-  main_user = Usuario.create!(
-    nome: funcionario.nome,
-    email: email,
-    password: password,
-    password_confirmation: password,
-    role: 'funcionario',
-    tipo_acesso: 'funcionario',
-    ativo: true,
-    token_integracao_loja: current_tenant.token_integracao,
-    token_identificacao: token_identificacao, # Esta é a coluna correta
-    id_funcionario: funcionario.id
-  )
+    # 1. Primeiro cria o usuário no banco principal
+    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+    main_user = Usuario.create!(
+      nome: funcionario.nome,
+      email: email,
+      password: password,
+      password_confirmation: password,
+      role: 'funcionario',
+      tipo_acesso: 'funcionario',
+      ativo: true,
+      token_integracao_loja: current_tenant.token_integracao,
+      token_identificacao: token_identificacao, # Esta é a coluna correta
+      id_funcionario: funcionario.id
+    )
 
-  # 2. Depois cria no tenant database
-  ActiveRecord::Base.establish_connection(current_tenant_db_config)
-  tenant_user = Usuario.create!(
-    nome: funcionario.nome,
-    email: email,
-    password: password,
-    password_confirmation: password,
-    role: 'funcionario',
-    tipo_acesso: 'funcionario',
-    ativo: true,
-    token_integracao_loja: current_tenant.token_integracao,
-    token_identificacao: token_identificacao, # Mesmo valor aqui
-    id_funcionario: funcionario.id
-  )
+    # 2. Depois cria no tenant database
+    ActiveRecord::Base.establish_connection(current_tenant_db_config)
+    tenant_user = Usuario.create!(
+      nome: funcionario.nome,
+      email: email,
+      password: password,
+      password_confirmation: password,
+      role: 'funcionario',
+      tipo_acesso: 'funcionario',
+      ativo: true,
+      token_integracao_loja: current_tenant.token_integracao,
+      token_identificacao: token_identificacao, # Mesmo valor aqui
+      id_funcionario: funcionario.id
+    )
 
-  # 3. ATUALIZAÇÃO CORRETA - usa usuario_token_identificacao que referencia token_identificacao
-  funcionario.update!(
-    usuario_token_identificacao: token_identificacao, # Coluna que existe em funcionarios
-    email: email
-  )
-rescue => e
-  # Rollback em caso de erro
-  main_user&.destroy
-  tenant_user&.destroy
-  raise ActiveRecord::Rollback, "Falha ao criar usuário: #{e.message}"
-ensure
-  ActiveRecord::Base.establish_connection(Rails.env.to_sym)
-end
+    # 3. ATUALIZAÇÃO CORRETA - usa usuario_token_identificacao que referencia token_identificacao
+    funcionario.update!(
+      usuario_token_identificacao: token_identificacao, # Coluna que existe em funcionarios
+      email: email
+    )
+  rescue => e
+    # Rollback em caso de erro
+    main_user&.destroy
+    tenant_user&.destroy
+    raise ActiveRecord::Rollback, "Falha ao criar usuário: #{e.message}"
+  ensure
+    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+  end
 
   def current_tenant_db_config
     config_file = Rails.root.join('config', 'databases', "#{current_tenant.token_integracao}.yml")

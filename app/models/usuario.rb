@@ -14,14 +14,12 @@ class Usuario < ApplicationRecord
   
   before_create :set_uuid
 
-  has_many :usuarios_permissoes
-  has_many :permissoes, through: :usuarios_permissoes
   has_many :vendas, foreign_key: 'usuario_id'
   has_many :historicos_estoque, foreign_key: 'usuario_id'
 
   audited except: [:encrypted_password, :token_integracao_loja]
   audited associated_with: :informacao_loja
-  has_associated_audits #:usuarios_permissoes, :permissoes, :vendas, :historicos_estoque
+  has_associated_audits # :vendas, :historicos_estoque
 
   enum :tipo_acesso, {
     super_admin: "super_admin",
