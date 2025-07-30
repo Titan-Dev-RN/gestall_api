@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_28_134801) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_30_103812) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -196,13 +196,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_28_134801) do
     t.index ["venda_id"], name: "index_nota_fiscals_on_venda_id"
   end
 
-  create_table "permissaos", force: :cascade do |t|
-    t.string "nome"
-    t.text "descricao"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "planos", force: :cascade do |t|
     t.string "nome"
     t.text "descricao"
@@ -223,14 +216,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_28_134801) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["assinatura_id"], name: "index_transacao_pagamentos_on_assinatura_id"
-  end
-
-  create_table "usuario_permissaos", force: :cascade do |t|
-    t.bigint "permissao_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.uuid "usuario_id"
-    t.index ["permissao_id"], name: "index_usuario_permissaos_on_permissao_id"
   end
 
   create_table "usuarios", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -292,7 +277,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_28_134801) do
   add_foreign_key "nota_fiscals", "informacao_lojas"
   add_foreign_key "nota_fiscals", "vendas"
   add_foreign_key "transacao_pagamentos", "assinaturas"
-  add_foreign_key "usuario_permissaos", "permissaos"
-  add_foreign_key "usuario_permissaos", "usuarios"
   add_foreign_key "vendas", "clientes"
 end
