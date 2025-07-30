@@ -9,15 +9,15 @@ class Api::V1::ProdutosController < ApplicationController
   def show
     render json: @produto.as_json.merge(nivel_permissao: @current_user.tipo_acesso)
   end
-  # POST /api/v1/produtos
+
   def create
     @produto = current_loja.estoque_produtos.new(produto_params)
     @produto.fornecedor_id ||= nil
     if @produto.save
       HistoricoEstoque.create(
         estoque_de_produto_id: @produto.id,
-        informacao_loja_id: current_loja.id,
-        usuario_id: @current_user.id,
+        informacao_loja_token: @current_user.token_integracao_loja,
+        usuario_token_identificacao: @current_user.token_identificacao,
         tipo_movimentacao: 'cadastro',
         quantidade: @produto.quantidade_em_estoque,
         data_movimentacao: Time.current,
@@ -29,7 +29,6 @@ class Api::V1::ProdutosController < ApplicationController
     end
   end
 
-  # PATCH/PUT /api/v1/produtos/1
   def update
     if @produto.update(produto_params)
       render json: @produto
@@ -38,13 +37,12 @@ class Api::V1::ProdutosController < ApplicationController
     end
   end
 
-  # DELETE /api/v1/produtos/1
   def destroy
     @produto.update(ativo: false)
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
-      informacao_loja_id: current_loja.id,
-      usuario_id: @current_user.id,
+      informacao_loja_token: @current_user.token_integracao_loja,
+      usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'desativacao',
       quantidade: @produto.quantidade_em_estoque,
       data_movimentacao: Time.current,
@@ -59,8 +57,8 @@ class Api::V1::ProdutosController < ApplicationController
 
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
-      informacao_loja_id: current_loja.id,
-      usuario_id: @current_user.id,
+      informacao_loja_token: @current_user.token_integracao_loja,
+      usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'reativacao',
       quantidade: @produto.quantidade_em_estoque,
       data_movimentacao: Time.current,
@@ -69,7 +67,6 @@ class Api::V1::ProdutosController < ApplicationController
     render json: { message: 'produto reativado com sucesso'}, status: :ok
   end
 
-  # GET /api/v1/produtos/baixo_estoque
   def baixo_estoque
     @produtos = current_loja.estoque_produtos.where('quantidade_em_estoque < quantidade_minima')
     render json: @produtos
@@ -88,8 +85,8 @@ class Api::V1::ProdutosController < ApplicationController
     
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
-      informacao_loja_id: current_loja.id,
-      usuario_id: @current_user.id,
+      informacao_loja_token: @current_user.token_integracao_loja,
+      usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'entrada',
       quantidade: quantidade,
       data_movimentacao: Time.current,
@@ -101,6 +98,11 @@ class Api::V1::ProdutosController < ApplicationController
       produto: @produto.reload,
       historico: HistoricoEstoque.last
     }, status: :ok
+  end
+
+  def categorias 
+    @categorias = Categoria.all
+    render json: @categorias
   end
 
   def criar_categoria
@@ -134,8 +136,8 @@ class Api::V1::ProdutosController < ApplicationController
     
     HistoricoEstoque.create(
       estoque_de_produto_id: @produto.id,
-      informacao_loja_id: current_loja.id,
-      usuario_id: @current_user.id,
+      informacao_loja_token: @current_user.token_integracao_loja,
+      usuario_token_identificacao: @current_user.token_identificacao,
       tipo_movimentacao: 'saida',
       quantidade: quantidade,
       data_movimentacao: Time.current,
@@ -151,9 +153,12 @@ class Api::V1::ProdutosController < ApplicationController
 
   private
 
-
   def set_produto
-    @produto = current_loja.estoque_produtos.find(params[:id])
+    @produto = EstoqueDeProduto.find_by(
+      id: params[:id],
+      informacao_loja_token: @current_user.token_integracao_loja
+    )
+    render json: { error: 'Produto não encontrado' }, status: :not_found unless @produto
   end
 
   def current_loja

@@ -5,6 +5,9 @@ class Permissao < ApplicationRecord
   
   validates :nome, presence: true, uniqueness: true
   
+  audited
+  has_associated_audits #:usuarios_permissoes, :usuarios
+
   # Todas as permissões fixas baseadas na imagem
   PERMISSOES_FIXAS = [
     # Vendas

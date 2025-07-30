@@ -11,7 +11,7 @@ class Usuarios::SessionsController < Devise::SessionsController
       render json: {
         status: 'success',
         usuario: {
-          id: user.id,
+          id:  user.token_identificacao,
           email: user.email,
           tipo_acesso: user.tipo_acesso,
           loja_ativa: loja_ativa?(user)
@@ -31,7 +31,7 @@ class Usuarios::SessionsController < Devise::SessionsController
 
   def generate_jwt_token(user)
     payload = {
-      sub: user.id,
+      sub: user.token_identificacao,
       exp: 24.hours.from_now.to_i,
       jti: SecureRandom.uuid,
       user_data: {

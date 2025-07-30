@@ -4,4 +4,6 @@ class ItemVenda < ApplicationRecord
   
   validates :quantidade, :valor_unitario, presence: true
   validates :estoque_de_produto, presence: true
+
+  audited associated_with: :venda
 end

@@ -7,7 +7,7 @@ class ApplicationController < ActionController::API
   before_action :verificar_loja_ativa, unless: -> { auth_whitelist? }
   before_action :switch_to_tenant_database
   before_action :verificar_permissao, unless: -> { auth_whitelist? || permissao_whitelist? }
-
+  before_action :set_audited_user
 
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from ActiveRecord::RecordInvalid, with: :invalid_record
@@ -55,6 +55,7 @@ class ApplicationController < ActionController::API
       adicionar_estoque: 'produto_adicionar_quantidade',
       remover_estoque: 'produto_remover_quantidade',
       criar_categoria: 'produto_cadastrar_categoria',
+      categorias: 'produto_visualizar_categorias',
       baixo_estoque: 'produto_visualizar_estoque'
     },
     vendas: {
@@ -86,6 +87,18 @@ class ApplicationController < ActionController::API
 
     config = YAML.load_file(config_file)
     ActiveRecord::Base.establish_connection(config)
+  end
+
+  # Adicionar um around_action para garantir a restauração da conexão
+  around_action :ensure_main_db_connection
+
+  def ensure_main_db_connection
+    yield
+  ensure
+    if ActiveRecord::Base.connection_db_config.database != Rails.configuration.database_configuration[Rails.env]['database']
+      ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+      Rails.logger.debug "Conexão restaurada para o banco principal (ApplicationController)"
+    end
   end
 
   def verificar_loja_ativa
@@ -131,7 +144,7 @@ class ApplicationController < ActionController::API
         { algorithm: 'HS256', verify_expiration: true }
       )
       
-      @current_user = Usuario.find(decoded.first['sub'])
+      @current_user = Usuario.find_by(token_identificacao: decoded.first['sub'])
 
     rescue JWT::ExpiredSignature
       render json: { error: 'Token expirado' }, status: :unauthorized
@@ -185,6 +198,14 @@ class ApplicationController < ActionController::API
     (controller_name == 'informacoes_lojas' && action_name == 'create')
   end
   
+  def current_user
+    @current_user
+  end
+
+  def set_audited_user
+    Audited.current_user_method = :current_user
+  end
+
   def not_found
     render json: { error: 'Registro não encontrado' }, status: :not_found
   end
@@ -196,4 +217,5 @@ class ApplicationController < ActionController::API
   def invalid_token
     render json: { error: 'Token JWT inválido' }, status: :unauthorized
   end
+
 end

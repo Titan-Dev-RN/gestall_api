@@ -1,98 +1,115 @@
 class Api::V1::FuncionariosController < ApplicationController
   before_action :set_funcionario, only: [:show, :update, :destroy]
 
-  # GET /api/v1/funcionarios
   def index
     funcionarios = Funcionario.where(
-      informacao_loja_id: current_tenant.id
+      informacao_loja_token: @current_user.token_integracao_loja
     ).includes(:usuario)
     
     render json: funcionarios, include: [:usuario]
   end
 
-  # GET /api/v1/funcionarios/:id
   def show
     render json: @funcionario, include: [:usuario]
   end
 
-  # POST /api/v1/funcionarios
   def create
     ActiveRecord::Base.transaction do
-      # Cria primeiro o funcionário base
-      @funcionario = Funcionario.new(funcionario_params.except(:criar_usuario))
-      @funcionario.informacao_loja_id = current_tenant.id
-      @funcionario.ativo = true
-      @funcionario.data_admissao ||= Date.current
+      # 1. Cria o funcionário no tenant database usando o método que funciona
+      tenant_creation = create_in_tenant_db
+      
+      unless tenant_creation[:success]
+        raise ActiveRecord::Rollback, tenant_creation[:error]
+      end
+      
+      @funcionario = tenant_creation[:funcionario]
 
-      unless @funcionario.save
+      # 2. Criação de usuário (se necessário)
+      if params[:funcionario][:criar_usuario].to_s.downcase == 'true'
+        create_user_for_funcionario(@funcionario)
+      end
+
+      render json: @funcionario, status: :created
+    rescue ActiveRecord::Rollback => e
+      render json: { errors: e.message }, status: :unprocessable_entity
+    rescue => e
+      render json: { errors: "Erro ao criar funcionário: #{e.message}" }, 
+            status: :unprocessable_entity
+    end
+  end
+
+  def update
+    ActiveRecord::Base.transaction do
+      unless @funcionario.update(funcionario_params.except(:criar_usuario, :email, :password))
         raise ActiveRecord::Rollback, @funcionario.errors.full_messages.to_sentence
       end
 
-      # Verifica se deve criar usuário
-      if params[:funcionario][:criar_usuario].to_s.downcase == 'true'
-        usuario_attrs = {
-          nome: @funcionario.nome,
-          email: params[:funcionario][:email], # Usa o mesmo email do funcionário
-          password: "senha123",
-          password_confirmation: "senha123",
-          role: 'funcionario',
-          tipo_acesso: 'funcionario',
-          ativo: true,
-          token_integracao_loja: current_tenant.token_integracao,
-          id_funcionario: @funcionario.id
-        }
-
-        usuario = Usuario.create(usuario_attrs)
-        
-        unless usuario.persisted?
-          raise ActiveRecord::Rollback, usuario.errors.full_messages.to_sentence
+      if should_create_or_update_user?
+        if @funcionario.usuario
+          update_existing_user(@funcionario)
+        else
+          create_user_for_funcionario(@funcionario)
         end
-
-        @funcionario.update(usuario_id: usuario.id)
       end
 
-      render json: @funcionario, include: [:usuario], status: :created
-    rescue ActiveRecord::Rollback => e
-      render json: { errors: e.message }, status: :unprocessable_entity
+      render json: @funcionario, include: [:usuario], status: :ok
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+    rescue => e
+      render json: { errors: "Erro ao atualizar funcionário: #{e.message}" }, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /api/v1/funcionarios/:id
-  def update
-    ActiveRecord::Base.transaction do
-      if @funcionario.update(funcionario_params.except(:criar_usuario))
-        # Atualiza ou cria usuário se necessário
-        if params[:usuario] && params[:usuario][:criar_usuario] && !@funcionario.usuario
-          usuario = criar_usuario_para_funcionario(@funcionario)
-          unless usuario.persisted?
-            raise ActiveRecord::Rollback, usuario.errors.full_messages.to_sentence
-          end
-          @funcionario.update(usuario_id: usuario.id)
-        end
-
-        render json: @funcionario, include: [:usuario]
-      else
-        render json: { errors: @funcionario.errors.full_messages }, status: :unprocessable_entity
-      end
-    end
-  end
-
-  # DELETE /api/v1/funcionarios/:id
   def destroy
     ActiveRecord::Base.transaction do
-      @funcionario.usuario&.update(ativo: false) # Desativa usuário se existir
-      @funcionario.update(ativo: false, data_demissao: Date.current)
+      # Deactivate associated user if exists
+      if @funcionario.usuario
+        ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+        usuario_principal = Usuario.find_by(token_identificacao: @funcionario.usuario_token_identificacao)
+        usuario_principal&.update!(ativo: false)
+        
+        @funcionario.usuario.update!(ativo: false)
+      end
+      
+      @funcionario.update!(ativo: false, data_demissao: Date.current)
       head :no_content
     end
   end
 
   private
 
+  def create_in_tenant_db
+    # Switch to tenant DB
+    tenant_config = current_tenant_db_config
+    ActiveRecord::Base.establish_connection(tenant_config)
 
+    funcionario = Funcionario.new(
+      funcionario_params.except(:criar_usuario, :email, :password)
+    )
+    funcionario.attributes = {
+      informacao_loja_token: current_tenant.token_integracao,
+      ativo: true,
+      data_admissao: Date.current
+    }
+
+    if funcionario.save
+      # Verificação explícita de persistência
+      unless Funcionario.exists?(funcionario.id)
+        return { success: false, error: "Funcionário não persistido no banco tenant" }
+      end
+      
+      { success: true, funcionario: funcionario }
+    else
+      { success: false, error: funcionario.errors.full_messages.to_sentence }
+    end
+  ensure
+    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+  end
+  
   def set_funcionario
     @funcionario = Funcionario.find_by(
       id: params[:id], 
-      informacao_loja_id: current_tenant.id
+      informacao_loja_token: @current_user.token_integracao_loja
     )
     render json: { error: 'Funcionário não encontrado' }, status: :not_found unless @funcionario
   end
@@ -101,31 +118,92 @@ class Api::V1::FuncionariosController < ApplicationController
     params.require(:funcionario).permit(
       :nome, :cpf, :rg, :data_nascimento, :cargo, :salario_base,
       :comissao_percentual, :data_admissao, :endereco, :telefone,
-      :email, :observacoes, :criar_usuario
+      :email, :observacoes, :criar_usuario, :password
     )
   end
 
-  def usuario_params
-    params.require(:usuario).permit(
-      :email, :password, :password_confirmation, :role, :tipo_acesso
-    )
+  def should_create_or_update_user?
+    params[:funcionario][:criar_usuario].to_s.downcase == 'true' ||
+    (params[:funcionario][:email].present? && @funcionario.usuario)
   end
 
-  def criar_usuario_para_funcionario(funcionario)
-    # Define valores padrão para o usuário
-    usuario_attrs = {
+  def create_user_for_funcionario(funcionario)
+    email = params[:funcionario][:email] || funcionario.email
+    password = params[:funcionario][:password] || SecureRandom.hex(8)
+    token_identificacao = SecureRandom.uuid # Gerando UUID no formato correto
+
+    # 1. Primeiro cria o usuário no banco principal
+    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+    main_user = Usuario.create!(
       nome: funcionario.nome,
-      email: params[:usuario][:email] || funcionario.email,
-      password: params[:usuario][:password] || SecureRandom.hex(8),
-      password_confirmation: params[:usuario][:password_confirmation] || params[:usuario][:password] || SecureRandom.hex(8),
-      role: params[:usuario][:role] || 'funcionario',
-      tipo_acesso: params[:usuario][:tipo_acesso] || 'funcionario',
+      email: email,
+      password: password,
+      password_confirmation: password,
+      role: 'funcionario',
+      tipo_acesso: 'funcionario',
       ativo: true,
       token_integracao_loja: current_tenant.token_integracao,
+      token_identificacao: token_identificacao, # Esta é a coluna correta
       id_funcionario: funcionario.id
-    }
+    )
 
-    Usuario.create!(usuario_attrs)
+    # 2. Depois cria no tenant database
+    ActiveRecord::Base.establish_connection(current_tenant_db_config)
+    tenant_user = Usuario.create!(
+      nome: funcionario.nome,
+      email: email,
+      password: password,
+      password_confirmation: password,
+      role: 'funcionario',
+      tipo_acesso: 'funcionario',
+      ativo: true,
+      token_integracao_loja: current_tenant.token_integracao,
+      token_identificacao: token_identificacao, # Mesmo valor aqui
+      id_funcionario: funcionario.id
+    )
+
+    # 3. ATUALIZAÇÃO CORRETA - usa usuario_token_identificacao que referencia token_identificacao
+    funcionario.update!(
+      usuario_token_identificacao: token_identificacao, # Coluna que existe em funcionarios
+      email: email
+    )
+  rescue => e
+    # Rollback em caso de erro
+    main_user&.destroy
+    tenant_user&.destroy
+    raise ActiveRecord::Rollback, "Falha ao criar usuário: #{e.message}"
+  ensure
+    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+  end
+
+  def current_tenant_db_config
+    config_file = Rails.root.join('config', 'databases', "#{current_tenant.token_integracao}.yml")
+    if File.exist?(config_file)
+      YAML.load_file(config_file)
+    else
+      Rails.logger.error "Tenant config file not found: #{config_file}"
+      raise "Tenant database configuration not found"
+    end
+  end
+
+  def update_existing_user(funcionario)
+    email = params[:funcionario][:email] || funcionario.email
+    password = params[:funcionario][:password]
+
+    # Update in main database
+    ActiveRecord::Base.establish_connection(Rails.env.to_sym)
+    usuario_principal = Usuario.find_by(token_identificacao: funcionario.usuario_token_identificacao)
+    update_params = { nome: funcionario.nome, email: email }
+    update_params[:password] = password if password.present?
+    update_params[:password_confirmation] = password if password.present?
+    
+    usuario_principal.update!(update_params)
+
+    # Update in tenant database
+    funcionario.usuario.update!(update_params)
+
+    # Update funcionario email if changed
+    funcionario.update!(email: email) if funcionario.email != email
   end
 
   def current_tenant
