@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_30_103812) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_31_124123) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -205,6 +205,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_30_103812) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "sessaos", force: :cascade do |t|
+    t.string "usuario_token_identificacao"
+    t.string "informacao_loja_token"
+    t.datetime "inicio"
+    t.datetime "fim"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "transacao_pagamentos", force: :cascade do |t|
     t.bigint "assinatura_id", null: false
     t.integer "valor"
@@ -260,8 +269,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_30_103812) do
     t.datetime "updated_at", null: false
     t.string "usuario_token_identificacao"
     t.string "informacao_loja_token"
+    t.integer "sessao_id"
     t.index ["cliente_id"], name: "index_vendas_on_cliente_id"
     t.index ["informacao_loja_token"], name: "index_vendas_on_informacao_loja_token"
+    t.index ["sessao_id"], name: "index_vendas_on_sessao_id"
     t.index ["usuario_token_identificacao"], name: "index_vendas_on_usuario_token_identificacao"
   end
 
@@ -278,4 +289,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_30_103812) do
   add_foreign_key "nota_fiscals", "vendas"
   add_foreign_key "transacao_pagamentos", "assinaturas"
   add_foreign_key "vendas", "clientes"
+  add_foreign_key "vendas", "sessaos"
 end

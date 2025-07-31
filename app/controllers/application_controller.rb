@@ -8,7 +8,7 @@ class ApplicationController < ActionController::API
   before_action :switch_to_tenant_database
   before_action :verificar_permissao, unless: -> { auth_whitelist? || permissao_whitelist? }
   before_action :set_audited_user
-
+  before_action :set_current_session
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from ActiveRecord::RecordInvalid, with: :invalid_record
   rescue_from JWT::DecodeError, with: :invalid_token
@@ -69,6 +69,13 @@ class ApplicationController < ActionController::API
       cancelar:   'vender_cancelar',
       aumentar_quantidade: 'vender_adicionar_remover',
       atualizar_desconto_item: 'vender_descontos'
+    },
+    sessoes: {
+      index: 'sessao_listar',
+      show: 'sessao_listar',
+      iniciar_sessao: 'sessao_iniciar',
+      encerrar_sessao: 'sessao_encerrar',
+      verificar_sessao: 'sessao_verificar'
     }
   }.freeze
 
@@ -77,6 +84,16 @@ class ApplicationController < ActionController::API
   end
 
   private
+
+  def set_current_session
+    if @current_user
+      @current_session = Sessao.find_by(
+        usuario_token_identificacao: @current_user.token_identificacao,
+        informacao_loja_token: @current_user.token_integracao_loja,
+        fim: nil 
+      )
+    end
+  end
 
   def switch_to_tenant_database
     return unless @current_user

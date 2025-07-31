@@ -60,6 +60,15 @@ Rails.application.routes.draw do
       end
       resources :funcionarios, only: [:index, :show, :create, :update, :destroy]
       
+      resources :sessoes, only: [:index, :show] do
+        collection do
+          post 'iniciar', to: 'sessoes#iniciar_sessao'
+          get 'verificar', to: 'sessoes#verificar_sessao'
+        end
+        member do
+          post 'encerrar', to: 'sessoes#encerrar_sessao'
+        end
+      end
       resources :informacoes_lojas do
         member do
           post :reativar

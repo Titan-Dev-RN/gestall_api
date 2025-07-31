@@ -29,7 +29,8 @@ class Api::V1::VendasController < ApplicationController
       desconto: 0,
       valor_total: 0,
       informacao_loja_token: loja.token_integracao,
-      usuario_token_identificacao: @current_user.token_identificacao
+      usuario_token_identificacao: @current_user.token_identificacao,
+      sessao_id: @current_session&.id
     )
 
     if @venda.save
