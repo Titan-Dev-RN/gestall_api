@@ -8,21 +8,27 @@ class Usuarios::SessionsController < Devise::SessionsController
     if user&.valid_password?(params[:usuario][:password])
       token = generate_jwt_token(user)
       loja = InformacaoLoja.find_by(token_integracao: user.token_integracao_loja)
-      render json: {
+      
+      response_data = {
         status: 'success',
         usuario: {
-          id:  user.token_identificacao,
+          id: user.token_identificacao,
           email: user.email,
           tipo_acesso: user.tipo_acesso,
           loja_ativa: loja&.ativo
         },
-        loja: {
+        token: token
+      }
+
+      if loja
+        response_data[:loja] = {
           nome: loja.nome_da_loja,
           token_integracao: loja.token_integracao,
-          ativo: loja.ativo,
-        },
-        token: token
-      }, status: :ok
+          ativo: loja.ativo
+        }
+      end
+
+      render json: response_data, status: :ok
     else
       render json: { error: 'Email ou senha inválidos' }, status: :unauthorized
     end
