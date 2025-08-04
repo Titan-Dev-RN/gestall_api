@@ -24,7 +24,14 @@ class Usuarios::SessionsController < Devise::SessionsController
         response_data[:loja] = {
           nome: loja.nome_da_loja,
           token_integracao: loja.token_integracao,
-          ativo: loja.ativo
+          ativo: loja.ativo,
+          cnpj: loja.cnpj,
+          cidade: loja.cidade,
+          estado: loja.estado,
+          endereco: loja.endereco,
+          telefone: loja.telefone,
+          email: loja.email,
+          plano: loja.plano_contratado,
         }
       end
 

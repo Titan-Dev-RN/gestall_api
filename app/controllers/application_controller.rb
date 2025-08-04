@@ -76,6 +76,10 @@ class ApplicationController < ActionController::API
       iniciar_sessao: 'sessao_iniciar',
       encerrar_sessao: 'sessao_encerrar',
       verificar_sessao: 'sessao_verificar'
+    },
+    minha_loja: {
+      show: 'minha_loja_visualizar',
+      update: 'minha_loja_atualizar'
     }
   }.freeze
 

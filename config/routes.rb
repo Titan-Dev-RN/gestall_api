@@ -17,16 +17,17 @@ Rails.application.routes.draw do
 
   # Rotas adicionais de usuários
   resources :usuarios, only: [:index, :create]
-
   namespace :api do
     namespace :v1 do
       post 'login', to: 'sessions#create'
       delete 'logout', to: 'sessions#destroy'
+
       resources :fornecedores, only: [:index, :show, :create, :update, :destroy] do
         member do
           post 'reativar_fornecedor'
         end
       end
+
       resources :produtos, only: [:index, :show, :create, :update, :destroy] do
         member do
           post 'reativar_produto'
@@ -40,11 +41,13 @@ Rails.application.routes.draw do
           get 'por_categoria/:categoria', action: :por_categoria
         end
       end
+      
       resources :clientes, only: [:index, :show, :create, :update, :destroy] do
         member do
           post 'reativar_cliente'
         end
       end
+
       resources :vendas, only: [:index, :show, :create] do
         collection do
           get 'vendas_all', action: :index_all
@@ -58,6 +61,7 @@ Rails.application.routes.draw do
           post 'cancelar'
         end
       end
+
       resources :funcionarios, only: [:index, :show, :create, :update, :destroy]
       
       resources :sessoes, only: [:index, :show] do
@@ -69,11 +73,16 @@ Rails.application.routes.draw do
           post 'encerrar', to: 'sessoes#encerrar_sessao'
         end
       end
+
       resources :informacoes_lojas do
         member do
           post :reativar
         end
       end
+
+      resource :minha_loja, only: [:show, :update], controller: 'minha_loja'
+    
+
     end
   end
 end
