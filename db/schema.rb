@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_31_124123) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -196,6 +196,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_31_124123) do
     t.index ["venda_id"], name: "index_nota_fiscals_on_venda_id"
   end
 
+  create_table "permissoes", primary_key: "token", id: :string, force: :cascade do |t|
+    t.string "token_integracao_loja"
+    t.string "nome"
+    t.text "descricao"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token_integracao_loja", "nome"], name: "index_permissoes_on_token_integracao_loja_and_nome", unique: true
+  end
+
   create_table "planos", force: :cascade do |t|
     t.string "nome"
     t.text "descricao"
@@ -255,6 +264,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_31_124123) do
     t.index ["reset_password_token"], name: "index_usuarios_on_reset_password_token", unique: true
     t.index ["token_identificacao"], name: "index_usuarios_on_token_identificacao", unique: true
     t.index ["token_integracao_loja"], name: "index_usuarios_on_token_integracao_loja"
+  end
+
+  create_table "usuarios_permissoes", id: false, force: :cascade do |t|
+    t.string "usuario_token_identificacao"
+    t.string "permissao_token"
+    t.string "token_integracao_loja"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["usuario_token_identificacao", "permissao_token", "token_integracao_loja"], name: "index_usuarios_permissoes_on_tokens", unique: true
   end
 
   create_table "vendas", force: :cascade do |t|

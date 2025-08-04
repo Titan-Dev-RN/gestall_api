@@ -82,7 +82,10 @@ Rails.application.routes.draw do
 
       resource :minha_loja, only: [:show, :update], controller: 'minha_loja'
     
-
+      resources :permissoes, only: [:index] do
+        post 'atribuir', on: :member
+        delete 'remover', on: :member
+      end
     end
   end
 end
