@@ -80,12 +80,19 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :permissoes, only: [:index, :create] do
+        collection do
+          post 'atribuir'
+          post 'remover'
+          get 'disponiveis'
+          get 'do_usuario/:usuario_token'
+        end
+      end
+      
       resource :minha_loja, only: [:show, :update], controller: 'minha_loja'
     
-      resources :permissoes, only: [:index] do
-        post 'atribuir', on: :member
-        delete 'remover', on: :member
-      end
+      
+
     end
   end
 end

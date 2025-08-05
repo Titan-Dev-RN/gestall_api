@@ -1,6 +1,8 @@
 namespace :tenants do
   desc "Run seeds for all tenant databases"
   task seed: :environment do
+    require_relative '../../db/seeds'
+    
     puts "Running seeds for main database..."
     Rake::Task['db:seed'].invoke
 
@@ -33,5 +35,4 @@ namespace :tenants do
 
     puts "All tenant seeds completed."
   end
-
 end
