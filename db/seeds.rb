@@ -1,6 +1,8 @@
 namespace :tenants do
   desc "Run seeds for all tenant databases"
   task seed: :environment do
+    PERMISSOES_DISPONIVEIS = ApplicationController::PERMISSOES_POR_ACAO.values.flat_map(&:values).uniq.freeze
+
     puts "Running seeds for main database..."
     Rake::Task['db:seed'].invoke
 
@@ -16,9 +18,17 @@ namespace :tenants do
         
         ActiveRecord::Base.establish_connection(config)
         
-        InformacaoLoja.find_by(token_integracao: tenant_name)&.then do |loja|
+        klass = Class.new(ApplicationRecord) do
+          self.table_name = 'informacao_lojas'
+        end
+        
+        klass.find_by(token_integracao: tenant_name)&.then do |loja|
           PERMISSOES_DISPONIVEIS.each do |nome|
-            Permissao.create_with(
+            permissao_class = Class.new(ApplicationRecord) do
+              self.table_name = 'permissoes'
+            end
+            
+            permissao_class.create_with(
               descricao: I18n.t("permissoes.#{nome}", default: nome.humanize),
               token: SecureRandom.hex(16)
             ).find_or_create_by(

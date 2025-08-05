@@ -80,7 +80,14 @@ class ApplicationController < ActionController::API
     minha_loja: {
       show: 'minha_loja_visualizar',
       update: 'minha_loja_atualizar'
-    }
+    },
+    permissoes: {
+      index: 'super_admin',
+      atribuir: 'super_admin',
+      remover: 'super_admin',
+      do_usuario: 'super_admin',
+      disponiveis: 'super_admin'
+    },
   }.freeze
 
   def current_tenant

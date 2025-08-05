@@ -79,19 +79,17 @@ Rails.application.routes.draw do
           post :reativar
         end
       end
+      
+      resource :minha_loja, only: [:show, :update], controller: 'minha_loja'
 
       resources :permissoes, only: [:index, :create] do
         collection do
           post 'atribuir'
           post 'remover'
           get 'disponiveis'
-          get 'do_usuario/:usuario_token'
+          get 'do_usuario/:usuario_token', to: 'permissoes#do_usuario'
         end
       end
-      
-      resource :minha_loja, only: [:show, :update], controller: 'minha_loja'
-    
-      
 
     end
   end

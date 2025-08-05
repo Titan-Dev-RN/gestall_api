@@ -1,5 +1,4 @@
 class UsuarioPermissao < ApplicationRecord
-  self.primary_key = :id
   self.table_name = 'usuarios_permissoes'
 
   belongs_to :usuario,
@@ -15,7 +14,6 @@ class UsuarioPermissao < ApplicationRecord
   private
 
   def set_tokens
-    self.id ||= SecureRandom.uuid
     self.token_integracao_loja ||= usuario&.token_integracao_loja
   end
 end

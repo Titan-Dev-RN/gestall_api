@@ -8,7 +8,7 @@ class Api::V1::PermissoesController < ApplicationController
 
     def atribuir
         usuario = Usuario.find_by(token_identificacao: params[:usuario_token])
-        permissao = Permissao.find_by(token: params[:permissao_token])
+        permissao = Permissao.find_by(nome: params[:permissao_nome])
 
         if usuario.token_integracao_loja != current_user.token_integracao_loja
             render json: { error: 'Acesso negado' }, status: :forbidden
@@ -25,8 +25,8 @@ class Api::V1::PermissoesController < ApplicationController
     end
 
     def remover
-        usuario = Usuario.find(params[:usuario_id])
-        permissao = Permissao.find(params[:permissao_id])
+        usuario = Usuario.find_by(token_identificacao: params[:usuario_token])
+        permissao = Permissao.find_by(nome: params[:permissao_nome])
 
         if usuario.token_integracao_loja != current_user.token_integracao_loja
             render json: { error: 'Acesso negado' }, status: :forbidden
@@ -35,11 +35,32 @@ class Api::V1::PermissoesController < ApplicationController
 
         usuario.permissoes.delete(permissao)
         render json: { message: 'Permissão removida com sucesso' }
+    end
+
+    def disponiveis
+        permissoes = ApplicationController::PERMISSOES_POR_ACAO.values.flat_map(&:values).uniq
+        render json: permissoes
+    end
+
+    # GET /api/v1/permissoes/do_usuario/:usuario_token
+    def do_usuario
+        usuario = Usuario.find_by(token_identificacao: params[:usuario_token])
+        
+        if usuario.nil? || usuario.token_integracao_loja != current_user.token_integracao_loja
+            render json: { error: 'Usuário não encontrado' }, status: :not_found
+            return
         end
 
-        private
+        render json: usuario.permissaos
+    end
 
-        def verificar_admin
+    private
+
+    def permissao_params
+        params.require(:permissao).permit(:nome, :descricao)
+    end
+
+    def verificar_admin
         unless current_user.admin_loja? || current_user.super_admin?
             render json: { error: 'Acesso negado' }, status: :forbidden
         end
