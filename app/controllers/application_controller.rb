@@ -217,13 +217,13 @@ class ApplicationController < ActionController::API
   end 
 
   def auth_whitelist?
-    controller_name == 'sessions' && action_name == 'create'
+    controller_name == 'sessions' && action_name == 'create' 
   end
 
   def permissao_whitelist?
     # Actions que não requerem verificação de permissão
     controller_name == 'sessions' || 
-    (controller_name == 'informacoes_lojas' && action_name == 'create')
+    (controller_name == 'informacoes_lojas' && action_name == 'create') 
   end
   
   def current_user

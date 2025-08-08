@@ -17,6 +17,9 @@ Rails.application.routes.draw do
 
   # Rotas adicionais de usuários
   resources :usuarios, only: [:index, :create]
+
+  
+
   namespace :api do
     namespace :v1 do
       post 'login', to: 'sessions#create'
@@ -35,6 +38,7 @@ Rails.application.routes.draw do
           post 'remover_estoque'
         end
         collection do
+          get :categorias, to: 'produtos#index_categorias'
           get 'baixo_estoque'
           post 'criar_categoria'
           get 'categorias'
@@ -91,6 +95,13 @@ Rails.application.routes.draw do
         end
       end
 
+
+      namespace :admin_super do
+        resources :informacoes_lojas 
+        resources :usuarios
+      end
+
+      resources :audits, only: [:index, :show] 
     end
   end
 end
