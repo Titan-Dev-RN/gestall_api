@@ -24,7 +24,8 @@ class Usuario < ApplicationRecord
   has_and_belongs_to_many :permissoes,
                         join_table: 'usuarios_permissoes',
                         foreign_key: 'usuario_token_identificacao',
-                        association_foreign_key: 'permissao_token'
+                        association_foreign_key: 'permissao_token',
+                        class_name: 'Permissao'
 
 
   enum :tipo_acesso, {
