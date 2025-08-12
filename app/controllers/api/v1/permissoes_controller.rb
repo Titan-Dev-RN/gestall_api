@@ -44,14 +44,19 @@ class Api::V1::PermissoesController < ApplicationController
 
     # GET /api/v1/permissoes/do_usuario/:usuario_token
     def do_usuario
+        Rails.logger.info "Buscando permissões para o usuário com token: #{params[:usuario_token]}"
         usuario = Usuario.find_by(token_identificacao: params[:usuario_token])
         
         if usuario.nil? || usuario.token_integracao_loja != current_user.token_integracao_loja
             render json: { error: 'Usuário não encontrado' }, status: :not_found
             return
         end
+        permissoes = UsuarioPermissao.where(
+            usuario_token_identificacao: usuario.token_identificacao,
+            token_integracao_loja: usuario.token_integracao_loja
+        ).includes(:permissao)
 
-        render json: usuario.permissaos
+        render json: permissoes.map { |up| up.permissao.slice(:nome, :descricao) }
     end
 
     private

@@ -188,33 +188,34 @@ class ApplicationController < ActionController::API
   end
 
   def verificar_permissao
-    # Super admin tem acesso total
-    return if @current_user&.super_admin?
+  return if @current_user&.super_admin?
 
-    controller = controller_name.to_sym
-    action = action_name.to_sym
+  controller = controller_name.to_sym
+  action = action_name.to_sym
 
-    # Obtém a permissão requerida para a ação
-    permissao_requerida = PERMISSOES_POR_ACAO.dig(controller, action)
+  permissao_requerida = PERMISSOES_POR_ACAO.dig(controller, action)
 
-    # Se não houver permissão definida, bloqueia por padrão
-    if permissao_requerida.nil?
-      render json: { 
-        error: 'Acesso negado', 
-        details: "Nenhuma permissão definida para #{controller}##{action}"
-      }, status: :forbidden
-      return
-    end
+  Rails.logger.info "Verificando permissão: usuário=#{@current_user&.email} controller=#{controller} action=#{action} permissao_requerida=#{permissao_requerida}"
 
-    # Verifica se o usuário tem a permissão necessária
-    unless @current_user&.tem_permissao?(permissao_requerida)
-      render json: { 
-        error: 'Acesso negado', 
-        details: "Permissão necessária: #{permissao_requerida}",
-        required_permission: permissao_requerida
-      }, status: :forbidden
-    end
-  end 
+  if permissao_requerida.nil?
+    render json: { 
+      error: 'Acesso negado', 
+      details: "Nenhuma permissão definida para #{controller}##{action}"
+    }, status: :forbidden
+    return
+  end
+
+  unless @current_user&.tem_permissao?(permissao_requerida)
+    Rails.logger.warn "Permissão negada: usuário não tem a permissão #{permissao_requerida}"
+    permissoes_usuario = @current_user.permissoes.pluck(:nome) if @current_user
+    render json: { 
+      error: 'Acesso negado', 
+      details: "Permissão necessária: #{permissao_requerida}",
+      required_permission: permissao_requerida,
+      user_permissions: permissoes_usuario || []
+    }, status: :forbidden
+  end
+end
 
   def auth_whitelist?
     controller_name == 'sessions' && action_name == 'create' 

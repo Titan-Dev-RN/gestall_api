@@ -29,7 +29,7 @@ class InformacaoLoja < ApplicationRecord
 
   FIXED_DB_CONFIG = {
     dbname: 'postgres',  # Banco padrão para conexão administrativa
-    user: 'root',    # Usuário do PostgreSQL
+    user: 'postgres',    # Usuário do PostgreSQL
     #password: '1234',    # Senha
     #host: 'localhost',   # Endereço
     #port: 5432           # Porta

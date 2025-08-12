@@ -21,10 +21,10 @@ class Usuario < ApplicationRecord
   audited associated_with: :informacao_loja
   has_associated_audits # :vendas, :historicos_estoque
 
-  has_and_belongs_to_many :permissaos,
-                          join_table: 'usuarios_permissoes',
-                          foreign_key: 'usuario_token_identificacao',
-                          association_foreign_key: 'permissao_token'
+  has_and_belongs_to_many :permissoes,
+                        join_table: 'usuarios_permissoes',
+                        foreign_key: 'usuario_token_identificacao',
+                        association_foreign_key: 'permissao_token'
 
 
   enum :tipo_acesso, {
@@ -58,7 +58,7 @@ class Usuario < ApplicationRecord
     return false unless permissao
     
     # Verifica se o usuário tem essa permissão
-    permissaos.exists?(token: permissao.token)
+    permissoes.exists?(token: permissao.token)
   end
 
   def atribuir_permissoes(*nomes_permissoes)
@@ -70,7 +70,7 @@ class Usuario < ApplicationRecord
         p.descricao = I18n.t("permissoes.#{nome}", default: nome.humanize)
       end
       
-      unless permissaos.exists?(token: permissao.token)
+      unless permissoes.exists?(token: permissao.token)
         UsuarioPermissao.create(
           usuario_token_identificacao: token_identificacao,
           permissao_token: permissao.token,
@@ -81,7 +81,7 @@ class Usuario < ApplicationRecord
   end
 
   def remover_permissoes(*nomes_permissoes)
-    permissaos.where(
+    permissoes.where(
       nome: nomes_permissoes,
       token_integracao_loja: token_integracao_loja
     ).each do |permissao|
