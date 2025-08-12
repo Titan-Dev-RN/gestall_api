@@ -82,11 +82,11 @@ class ApplicationController < ActionController::API
       update: 'minha_loja_atualizar'
     },
     permissoes: {
-      index: 'super_admin',
-      atribuir: 'super_admin',
-      remover: 'super_admin',
-      do_usuario: 'super_admin',
-      disponiveis: 'super_admin'
+      index: 'admin_loja',
+      atribuir: 'admin_loja',
+      remover: 'admin_loja',
+      do_usuario: 'admin_loja',
+      disponiveis: 'admin_loja'
     },
   }.freeze
 
@@ -188,7 +188,7 @@ class ApplicationController < ActionController::API
   end
 
   def verificar_permissao
-  return if @current_user&.super_admin?
+  return if @current_user&.super_admin? || @current_user&.admin_loja?
 
   controller = controller_name.to_sym
   action = action_name.to_sym

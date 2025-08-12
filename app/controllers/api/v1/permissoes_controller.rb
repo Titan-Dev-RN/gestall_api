@@ -7,21 +7,47 @@ class Api::V1::PermissoesController < ApplicationController
     end
 
     def atribuir
+        # Encontra o usuário
         usuario = Usuario.find_by(token_identificacao: params[:usuario_token])
-        permissao = Permissao.find_by(nome: params[:permissao_nome])
-
-        if usuario.token_integracao_loja != current_user.token_integracao_loja
+        
+        # Verifica se o usuário pertence ao mesmo tenant
+        if usuario.nil? || usuario.token_integracao_loja != current_user.token_integracao_loja
             render json: { error: 'Acesso negado' }, status: :forbidden
             return
         end
 
-        UsuarioPermissao.create(
-            usuario_token_identificacao: usuario.token_identificacao,
-            permissao_token: permissao.token,
-            token_integracao_loja: usuario.token_integracao_loja
+        # Espera um array de nomes de permissões no formato:
+        # { "usuario_token": "abc123", "permissoes": ["permissao1", "permissao2"] }
+        permissoes = params[:permissoes] || []
+        
+        # Encontra todas as permissões de uma vez
+        permissoes_encontradas = Permissao.where(
+            nome: permissoes,
+            token_integracao_loja: current_user.token_integracao_loja
         )
 
-        render json: { message: 'Permissão atribuída com sucesso' }
+        # Prepara os registros para inserção em massa
+        registros = permissoes_encontradas.map do |permissao|
+            {
+            usuario_token_identificacao: usuario.token_identificacao,
+            permissao_token: permissao.token,
+            token_integracao_loja: usuario.token_integracao_loja,
+            created_at: Time.current,
+            updated_at: Time.current
+            }
+        end
+
+        # Insere em massa ignorando duplicatas
+        UsuarioPermissao.insert_all(
+            registros,
+            unique_by: [:usuario_token_identificacao, :permissao_token, :token_integracao_loja]
+        )
+
+        render json: { 
+            message: 'Permissões atribuídas com sucesso',
+            atribuidas: permissoes_encontradas.pluck(:nome),
+            nao_encontradas: permissoes - permissoes_encontradas.pluck(:nome)
+        }
     end
 
     def remover
