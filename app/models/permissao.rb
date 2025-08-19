@@ -1,55 +1,26 @@
-# app/models/permissao.rb
 class Permissao < ApplicationRecord
-  has_many :usuarios_permissoes
-  has_many :usuarios, through: :usuarios_permissoes
-  
-  validates :nome, presence: true, uniqueness: true
-  
-  audited
-  has_associated_audits #:usuarios_permissoes, :usuarios
+    self.table_name = 'permissoes'
 
-  # Todas as permissões fixas baseadas na imagem
-  PERMISSOES_FIXAS = [
-    # Vendas
-    { nome: 'vender_iniciar_finalizar', descricao: 'Iniciar/Finalizar venda' },
-    { nome: 'vender_cancelar', descricao: 'Cancelar venda' },
-    { nome: 'vender_adicionar_remover', descricao: 'Adicionar/Remover itens da venda' },
-    { nome: 'vender_descontos', descricao: 'Aplicar descontos' },
-    { nome: 'vender_consultar', descricao: 'Consultar vendas' },
-    
-    # Produtos
-    { nome: 'produto_cadastrar', descricao: 'Cadastrar produto' },
-    { nome: 'produto_cadastrar_categoria', descricao: 'Cadastrar categoria' },
-    { nome: 'produto_ativar_desativar', descricao: 'Ativar/Desativar produto' },
-    { nome: 'produto_visualizar_estoque', descricao: 'Visualizar estoque' },
-    { nome: 'produto_adicionar_quantidade', descricao: 'Adicionar quantidade ao estoque' },
-    { nome: 'produto_remover_quantidade', descricao: 'Remover quantidade do estoque' },
-    { nome: 'produto_atualizar', descricao: 'Atualizar produto' },
-    
-    # Fornecedores
-    { nome: 'fornecedor_cadastrar', descricao: 'Cadastrar fornecedor' },
-    { nome: 'fornecedor_ativar_desativar', descricao: 'Ativar/Desativar fornecedor' },
-    { nome: 'fornecedor_listar', descricao: 'Listar fornecedores' },
-    { nome: 'fornecedor_atualizar', descricao: 'Atualizar fornecedor' },
-    
-    # Clientes
-    { nome: 'cliente_cadastrar', descricao: 'Cadastrar cliente' },
-    { nome: 'cliente_ativar_desativar', descricao: 'Ativar/Desativar cliente' },
-    { nome: 'cliente_listar', descricao: 'Listar clientes' },
-    { nome: 'cliente_atualizar', descricao: 'Atualizar cliente' },
-    
-    # Funcionários
-    { nome: 'funcionario_registrar', descricao: 'Registrar funcionário/usuário' },
-    { nome: 'funcionario_listar', descricao: 'Listar funcionários' },
-    { nome: 'funcionario_desativar', descricao: 'Desativar funcionário' }
-  ].freeze
+  belongs_to :informacao_loja, 
+             foreign_key: :token_integracao_loja, 
+             primary_key: :token_integracao,
+             optional: true
 
-  # Método para criar todas as permissões fixas
-  def self.criar_permissoes_fixas
-    PERMISSOES_FIXAS.each do |permissao|
-      find_or_create_by!(nome: permissao[:nome]) do |p|
-        p.descricao = permissao[:descricao]
-      end
-    end
+  has_and_belongs_to_many :usuarios,
+                          join_table: 'usuarios_permissoes',
+                          association_foreign_key: 'usuario_token_identificacao',
+                          foreign_key: 'permissao_token'
+
+  validates :token, presence: true, uniqueness: { scope: :token_integracao_loja }
+  validates :nome, presence: true, uniqueness: { scope: :token_integracao_loja }
+  validates :descricao, presence: true
+
+  before_validation :set_tokens, on: :create
+
+  private
+
+  def set_tokens
+    self.token ||= SecureRandom.hex(16)
+    self.token_integracao_loja ||= informacao_loja&.token_integracao
   end
 end

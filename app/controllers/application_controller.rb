@@ -8,7 +8,7 @@ class ApplicationController < ActionController::API
   before_action :switch_to_tenant_database
   before_action :verificar_permissao, unless: -> { auth_whitelist? || permissao_whitelist? }
   before_action :set_audited_user
-
+  before_action :set_current_session
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from ActiveRecord::RecordInvalid, with: :invalid_record
   rescue_from JWT::DecodeError, with: :invalid_token
@@ -69,7 +69,25 @@ class ApplicationController < ActionController::API
       cancelar:   'vender_cancelar',
       aumentar_quantidade: 'vender_adicionar_remover',
       atualizar_desconto_item: 'vender_descontos'
-    }
+    },
+    sessoes: {
+      index: 'sessao_listar',
+      show: 'sessao_listar',
+      iniciar_sessao: 'sessao_iniciar',
+      encerrar_sessao: 'sessao_encerrar',
+      verificar_sessao: 'sessao_verificar'
+    },
+    minha_loja: {
+      show: 'minha_loja_visualizar',
+      update: 'minha_loja_atualizar'
+    },
+    permissoes: {
+      index: 'admin_loja',
+      atribuir: 'admin_loja',
+      remover: 'admin_loja',
+      do_usuario: 'admin_loja',
+      disponiveis: 'admin_loja'
+    },
   }.freeze
 
   def current_tenant
@@ -77,6 +95,16 @@ class ApplicationController < ActionController::API
   end
 
   private
+
+  def set_current_session
+    if @current_user
+      @current_session = Sessao.find_by(
+        usuario_token_identificacao: @current_user.token_identificacao,
+        informacao_loja_token: @current_user.token_integracao_loja,
+        fim: nil 
+      )
+    end
+  end
 
   def switch_to_tenant_database
     return unless @current_user
@@ -160,42 +188,43 @@ class ApplicationController < ActionController::API
   end
 
   def verificar_permissao
-    # Super admin tem acesso total
-    return if @current_user&.super_admin?
+  return if @current_user&.super_admin? || @current_user&.admin_loja?
 
-    controller = controller_name.to_sym
-    action = action_name.to_sym
+  controller = controller_name.to_sym
+  action = action_name.to_sym
 
-    # Obtém a permissão requerida para a ação
-    permissao_requerida = PERMISSOES_POR_ACAO.dig(controller, action)
+  permissao_requerida = PERMISSOES_POR_ACAO.dig(controller, action)
 
-    # Se não houver permissão definida, bloqueia por padrão
-    if permissao_requerida.nil?
-      render json: { 
-        error: 'Acesso negado', 
-        details: "Nenhuma permissão definida para #{controller}##{action}"
-      }, status: :forbidden
-      return
-    end
+  Rails.logger.info "Verificando permissão: usuário=#{@current_user&.email} controller=#{controller} action=#{action} permissao_requerida=#{permissao_requerida}"
 
-    # Verifica se o usuário tem a permissão necessária
-    unless @current_user&.tem_permissao?(permissao_requerida)
-      render json: { 
-        error: 'Acesso negado', 
-        details: "Permissão necessária: #{permissao_requerida}",
-        required_permission: permissao_requerida
-      }, status: :forbidden
-    end
-  end 
+  if permissao_requerida.nil?
+    render json: { 
+      error: 'Acesso negado', 
+      details: "Nenhuma permissão definida para #{controller}##{action}"
+    }, status: :forbidden
+    return
+  end
+
+  unless @current_user&.tem_permissao?(permissao_requerida)
+    Rails.logger.warn "Permissão negada: usuário não tem a permissão #{permissao_requerida}"
+    permissoes_usuario = @current_user.permissoes.pluck(:nome) if @current_user
+    render json: { 
+      error: 'Acesso negado', 
+      details: "Permissão necessária: #{permissao_requerida}",
+      required_permission: permissao_requerida,
+      user_permissions: permissoes_usuario || []
+    }, status: :forbidden
+  end
+end
 
   def auth_whitelist?
-    controller_name == 'sessions' && action_name == 'create'
+    controller_name == 'sessions' && action_name == 'create' 
   end
 
   def permissao_whitelist?
     # Actions que não requerem verificação de permissão
     controller_name == 'sessions' || 
-    (controller_name == 'informacoes_lojas' && action_name == 'create')
+    (controller_name == 'informacoes_lojas' && action_name == 'create') 
   end
   
   def current_user

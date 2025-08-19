@@ -18,15 +18,19 @@ Rails.application.routes.draw do
   # Rotas adicionais de usuários
   resources :usuarios, only: [:index, :create]
 
+  
+
   namespace :api do
     namespace :v1 do
       post 'login', to: 'sessions#create'
       delete 'logout', to: 'sessions#destroy'
+
       resources :fornecedores, only: [:index, :show, :create, :update, :destroy] do
         member do
           post 'reativar_fornecedor'
         end
       end
+
       resources :produtos, only: [:index, :show, :create, :update, :destroy] do
         member do
           post 'reativar_produto'
@@ -34,16 +38,20 @@ Rails.application.routes.draw do
           post 'remover_estoque'
         end
         collection do
+          get :categorias, to: 'produtos#index_categorias'
           get 'baixo_estoque'
+          post 'criar_categoria'
           get 'categorias'
           get 'por_categoria/:categoria', action: :por_categoria
         end
       end
+      
       resources :clientes, only: [:index, :show, :create, :update, :destroy] do
         member do
           post 'reativar_cliente'
         end
       end
+
       resources :vendas, only: [:index, :show, :create] do
         collection do
           get 'vendas_all', action: :index_all
@@ -57,13 +65,43 @@ Rails.application.routes.draw do
           post 'cancelar'
         end
       end
+
       resources :funcionarios, only: [:index, :show, :create, :update, :destroy]
       
+      resources :sessoes, only: [:index, :show] do
+        collection do
+          post 'iniciar', to: 'sessoes#iniciar_sessao'
+          get 'verificar', to: 'sessoes#verificar_sessao'
+        end
+        member do
+          post 'encerrar', to: 'sessoes#encerrar_sessao'
+        end
+      end
+
       resources :informacoes_lojas do
         member do
           post :reativar
         end
       end
+      
+      resource :minha_loja, only: [:show, :update], controller: 'minha_loja'
+
+      resources :permissoes, only: [:index, :create] do
+        collection do
+          post 'atribuir'
+          post 'remover'
+          get 'disponiveis'
+          get 'do_usuario/:usuario_token', to: 'permissoes#do_usuario'
+        end
+      end
+
+
+      namespace :admin_super do
+        resources :informacoes_lojas 
+        resources :usuarios
+      end
+
+      resources :audits, only: [:index, :show] 
     end
   end
 end

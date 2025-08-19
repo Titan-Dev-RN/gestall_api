@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_30_103812) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -196,11 +196,29 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_30_103812) do
     t.index ["venda_id"], name: "index_nota_fiscals_on_venda_id"
   end
 
+  create_table "permissoes", primary_key: "token", id: :string, force: :cascade do |t|
+    t.string "token_integracao_loja"
+    t.string "nome"
+    t.text "descricao"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token_integracao_loja", "nome"], name: "index_permissoes_on_token_integracao_loja_and_nome", unique: true
+  end
+
   create_table "planos", force: :cascade do |t|
     t.string "nome"
     t.text "descricao"
     t.integer "valor_mensal"
     t.text "recursos"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "sessaos", force: :cascade do |t|
+    t.string "usuario_token_identificacao"
+    t.string "informacao_loja_token"
+    t.datetime "inicio"
+    t.datetime "fim"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -248,6 +266,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_30_103812) do
     t.index ["token_integracao_loja"], name: "index_usuarios_on_token_integracao_loja"
   end
 
+  create_table "usuarios_permissoes", id: false, force: :cascade do |t|
+    t.string "usuario_token_identificacao"
+    t.string "permissao_token"
+    t.string "token_integracao_loja"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["usuario_token_identificacao", "permissao_token", "token_integracao_loja"], name: "index_usuarios_permissoes_on_tokens", unique: true
+  end
+
   create_table "vendas", force: :cascade do |t|
     t.bigint "cliente_id"
     t.datetime "data_venda"
@@ -260,8 +287,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_30_103812) do
     t.datetime "updated_at", null: false
     t.string "usuario_token_identificacao"
     t.string "informacao_loja_token"
+    t.integer "sessao_id"
     t.index ["cliente_id"], name: "index_vendas_on_cliente_id"
     t.index ["informacao_loja_token"], name: "index_vendas_on_informacao_loja_token"
+    t.index ["sessao_id"], name: "index_vendas_on_sessao_id"
     t.index ["usuario_token_identificacao"], name: "index_vendas_on_usuario_token_identificacao"
   end
 
@@ -278,4 +307,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_30_103812) do
   add_foreign_key "nota_fiscals", "vendas"
   add_foreign_key "transacao_pagamentos", "assinaturas"
   add_foreign_key "vendas", "clientes"
+  add_foreign_key "vendas", "sessaos"
 end

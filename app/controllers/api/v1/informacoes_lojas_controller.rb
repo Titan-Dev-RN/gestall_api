@@ -33,10 +33,6 @@ class Api::V1::InformacoesLojasController < ApplicationController
           raise ActiveRecord::Rollback
         end
 
-        unless @loja.send(:criar_permissoes_fixas)
-          raise ActiveRecord::Rollback
-        end
-
         render json: {
           message: "Loja criada com sucesso",
           loja: @loja,

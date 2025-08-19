@@ -1,8 +1,8 @@
 namespace :tenants do
   desc "Run seeds for all tenant databases"
   task seed: :environment do
-    PERMISSOES_DISPONIVEIS = ApplicationController::PERMISSOES_POR_ACAO.values.flat_map(&:values).uniq.freeze
-
+    require_relative '../../db/seeds'
+    
     puts "Running seeds for main database..."
     Rake::Task['db:seed'].invoke
 
@@ -14,35 +14,21 @@ namespace :tenants do
       puts "Seeding tenant: #{tenant_name}"
 
       begin
+        # Carrega a configuração do tenant
         config = YAML.load_file(config_file)
         
+        # Estabelece conexão com o banco do tenant
         ActiveRecord::Base.establish_connection(config)
         
-        klass = Class.new(ApplicationRecord) do
-          self.table_name = 'informacao_lojas'
-        end
-        
-        klass.find_by(token_integracao: tenant_name)&.then do |loja|
-          PERMISSOES_DISPONIVEIS.each do |nome|
-            permissao_class = Class.new(ApplicationRecord) do
-              self.table_name = 'permissoes'
-            end
-            
-            permissao_class.create_with(
-              descricao: I18n.t("permissoes.#{nome}", default: nome.humanize),
-              token: SecureRandom.hex(16)
-            ).find_or_create_by(
-              nome: nome,
-              token_integracao_loja: loja.token_integracao
-            )
-          end
-        end
+        # Carrega e executa o arquivo de seeds
+        load(Rails.root.join('db', 'seeds.rb'))
         
         puts "Successfully seeded #{tenant_name}"
       rescue => e
         puts "Failed to seed #{tenant_name}: #{e.message}"
         puts e.backtrace.join("\n") if Rails.env.development?
       ensure
+        # Restaura a conexão padrão
         ActiveRecord::Base.establish_connection(Rails.env.to_sym)
       end
     end
