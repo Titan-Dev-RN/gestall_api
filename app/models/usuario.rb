@@ -55,11 +55,19 @@ class Usuario < ApplicationRecord
       nome: permissao_nome,
       token_integracao_loja: token_integracao_loja
     )
-    
+
+    permissoes = UsuarioPermissao.where(
+            usuario_token_identificacao: token_identificacao,
+            token_integracao_loja: token_integracao_loja
+    ).includes(:permissao)
+
+    Rails.logger.info("Verificando permissão: #{permissao_nome} para usuário: #{token_identificacao} na loja: #{token_integracao_loja}")
+    Rails.logger.info("permissoes #{permissoes.pluck(:nome)}")
+
     return false unless permissao
     
     # Verifica se o usuário tem essa permissão
-    permissoes.exists?(token: permissao.token)
+    permissoes.exists?(permissao_token: permissao.token)
   end
 
   def atribuir_permissoes(*nomes_permissoes)
