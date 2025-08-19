@@ -86,7 +86,8 @@ class ApplicationController < ActionController::API
       atribuir: 'admin_loja',
       remover: 'admin_loja',
       do_usuario: 'admin_loja',
-      disponiveis: 'admin_loja'
+      disponiveis: 'admin_loja',
+      minhas_permissoes: 'minhas_permissoes'
     },
   }.freeze
 
@@ -188,43 +189,42 @@ class ApplicationController < ActionController::API
   end
 
   def verificar_permissao
-  return if @current_user&.super_admin? || @current_user&.admin_loja?
+    return if @current_user&.super_admin? || @current_user&.admin_loja?
 
-  controller = controller_name.to_sym
-  action = action_name.to_sym
+    controller = controller_name.to_sym
+    action = action_name.to_sym
 
-  permissao_requerida = PERMISSOES_POR_ACAO.dig(controller, action)
+    permissao_requerida = PERMISSOES_POR_ACAO.dig(controller, action)
 
-  Rails.logger.info "Verificando permissão: usuário=#{@current_user&.email} controller=#{controller} action=#{action} permissao_requerida=#{permissao_requerida}"
+    Rails.logger.info "Verificando permissão: usuário=#{@current_user&.email} controller=#{controller} action=#{action} permissao_requerida=#{permissao_requerida}"
 
-  if permissao_requerida.nil?
-    render json: { 
-      error: 'Acesso negado', 
-      details: "Nenhuma permissão definida para #{controller}##{action}"
-    }, status: :forbidden
-    return
+    if permissao_requerida.nil?
+      render json: { 
+        error: 'Acesso negado', 
+        details: "Nenhuma permissão definida para #{controller}##{action}"
+      }, status: :forbidden
+      return
+    end
+
+    unless @current_user&.tem_permissao?(permissao_requerida)
+      Rails.logger.warn "Permissão negada: usuário não tem a permissão #{permissao_requerida}"
+      permissoes_usuario = @current_user.permissoes.pluck(:nome) if @current_user
+      render json: { 
+        error: 'Acesso negado', 
+        details: "Permissão necessária: #{permissao_requerida}",
+        required_permission: permissao_requerida,
+        user_permissions: permissoes_usuario || []
+      }, status: :forbidden
+    end
   end
-
-  unless @current_user&.tem_permissao?(permissao_requerida)
-    Rails.logger.warn "Permissão negada: usuário não tem a permissão #{permissao_requerida}"
-    permissoes_usuario = @current_user.permissoes.pluck(:nome) if @current_user
-    render json: { 
-      error: 'Acesso negado', 
-      details: "Permissão necessária: #{permissao_requerida}",
-      required_permission: permissao_requerida,
-      user_permissions: permissoes_usuario || []
-    }, status: :forbidden
-  end
-end
 
   def auth_whitelist?
-    controller_name == 'sessions' && action_name == 'create' 
+    (controller_name == 'sessions' && action_name == 'create')
   end
 
   def permissao_whitelist?
     # Actions que não requerem verificação de permissão
-    controller_name == 'sessions' || 
-    (controller_name == 'informacoes_lojas' && action_name == 'create') 
+    controller_name == 'sessions' || (controller_name == 'informacoes_lojas' && action_name == 'create') || (controller_name == 'permissoes' && action_name == 'minhas_permissoes')
   end
   
   def current_user

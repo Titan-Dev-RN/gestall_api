@@ -92,6 +92,7 @@ Rails.application.routes.draw do
           post 'remover'
           get 'disponiveis'
           get 'do_usuario/:usuario_token', to: 'permissoes#do_usuario'
+          get 'minhas_permissoes'
         end
       end
 
