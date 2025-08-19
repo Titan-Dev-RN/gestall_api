@@ -38,9 +38,11 @@ Rails.application.routes.draw do
           post 'remover_estoque'
         end
         collection do
-          get :categorias, to: 'produtos#index_categorias'
+          get :categorias, to: 'produtos#categorias'
           get 'baixo_estoque'
           post 'criar_categoria'
+          post 'update_categoria/:id', to: 'produtos#update_categoria'
+          delete 'delete_categoria/:id', to: 'produtos#delete_categoria'
           get 'categorias'
           get 'por_categoria/:categoria', action: :por_categoria
         end

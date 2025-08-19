@@ -114,6 +114,24 @@ class Api::V1::ProdutosController < ApplicationController
     end
   end
 
+  def update_categoria
+    @categoria = Categoria.find(params[:id])
+    if @categoria.update(categoria_params)
+      render json: @categoria
+    else
+      render json: @categoria.errors, status: :unprocessable_entity
+    end
+  end
+
+  def delete_categoria
+    @categoria = Categoria.find(params[:id])
+    if @categoria.update(ativo: false)
+      render json: { message: 'Categoria desativada com sucesso' }, status: :ok
+    else
+      render json: @categoria.errors, status: :unprocessable_entity
+    end
+  end
+
   def categoria_params
     params.require(:categoria).permit(:nome)
   end
