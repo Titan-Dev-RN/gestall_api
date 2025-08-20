@@ -2,12 +2,29 @@ class Api::V1::InformacoesLojasController < ApplicationController
   before_action :set_loja, only: [ :show, :update, :destroy, :reativar ]
 
   def index
-    @lojas = InformacaoLoja.all
-    render json: @lojas, status: :ok
+    page = params[:page] || 1
+    per_page = params[:per_page] || 10
+
+    @lojas = InformacaoLoja.page(page).per(per_page)
+    lojas_com_funcionarios = @lojas.map do |loja|
+      funcionarios = Usuario.where(token_integracao_loja: loja.token_integracao)
+      {
+        loja: loja,
+        funcionarios: funcionarios,
+        total_funcionarios: funcionarios.count
+      }
+    end
+
+    render json: {
+      lojas: lojas_com_funcionarios,
+      current_page: @lojas.current_page,
+      total_pages: @lojas.total_pages,
+      total_count: @lojas.total_count
+    }, status: :ok
   end
 
   def show
-    render json: @loja
+    render json: { loja: @loja, funcionarios: @funcionarios }, status: :ok
   end
 
   def create
