@@ -1,0 +1,2 @@
+class Contas < ApplicationRecord
+end

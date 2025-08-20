@@ -98,7 +98,8 @@ Rails.application.routes.draw do
         end
       end
 
-
+      resources :contas
+      
       namespace :admin_super do
         resources :informacoes_lojas 
         resources :usuarios

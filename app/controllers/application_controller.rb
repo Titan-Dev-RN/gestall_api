@@ -91,6 +91,13 @@ class ApplicationController < ActionController::API
       disponiveis: 'admin_loja',
       minhas_permissoes: 'minhas_permissoes'
     },
+    contas: {
+      index: 'conta_listar',
+      show: 'conta_listar',
+      create: 'conta_cadastrar',
+      update: 'conta_atualizar',
+      destroy: 'conta_desativar',
+    }
   }.freeze
 
   def current_tenant
