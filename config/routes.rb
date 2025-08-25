@@ -100,6 +100,8 @@ Rails.application.routes.draw do
 
       resources :contas
       
+      resources :servicos
+      
       namespace :admin_super do
         resources :informacoes_lojas 
         resources :usuarios
