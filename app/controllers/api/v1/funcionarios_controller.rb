@@ -83,6 +83,11 @@ class Api::V1::FuncionariosController < ApplicationController
     tenant_config = current_tenant_db_config
     ActiveRecord::Base.establish_connection(tenant_config)
 
+     # Critério de unicidade (coloquei email)
+  if Funcionario.exists?(email: funcionario_params[:email])
+    return { success: true, funcionario: Funcionario.find_by(email: funcionario_params[:email]) }
+  end
+
     funcionario = Funcionario.new(
       funcionario_params.except(:criar_usuario, :email, :password)
     )
@@ -116,7 +121,7 @@ class Api::V1::FuncionariosController < ApplicationController
 
   def funcionario_params
     params.require(:funcionario).permit(
-      :nome, :cpf, :rg, :data_nascimento, :cargo, :salario_base,
+      :nome, :email, :rg, :data_nascimento, :cargo, :salario_base,
       :comissao_percentual, :data_admissao, :endereco, :telefone,
       :email, :observacoes, :criar_usuario, :password
     )
