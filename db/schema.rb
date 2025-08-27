@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_24_151235) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -149,7 +149,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_24_151235) do
     t.string "status"
     t.date "data_desativacao"
     t.index ["informacao_loja_token"], name: "index_funcionarios_on_informacao_loja_token"
-    t.index ["usuario_token_identificacao"], name: "index_funcionarios_on_usuario_token_identificacao"
+    t.index ["usuario_token_identificacao"], name: "index_funcionarios_on_usuario_token_identificacao", unique: true
   end
 
   create_table "historico_estoques", force: :cascade do |t|
@@ -200,6 +200,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_24_151235) do
     t.index ["venda_id"], name: "index_item_vendas_on_venda_id"
   end
 
+  create_table "materiais_servico", force: :cascade do |t|
+    t.bigint "servico_id"
+    t.bigint "estoque_de_produto_id"
+    t.integer "quantidade_utilizada"
+    t.decimal "custo_unitario"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["estoque_de_produto_id"], name: "index_materiais_servico_on_estoque_de_produto_id"
+    t.index ["servico_id"], name: "index_materiais_servico_on_servico_id"
+  end
+
   create_table "nota_fiscals", force: :cascade do |t|
     t.bigint "venda_id", null: false
     t.bigint "informacao_loja_id", null: false
@@ -232,6 +243,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_24_151235) do
     t.text "recursos"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "servicos", force: :cascade do |t|
+    t.string "nome"
+    t.text "descricao"
+    t.integer "valor"
+    t.bigint "categoria_id"
+    t.string "token_integracao_loja"
+    t.string "usuario_token_identificacao"
+    t.boolean "status", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["categoria_id"], name: "index_servicos_on_categoria_id"
+    t.index ["token_integracao_loja"], name: "index_servicos_on_token_integracao_loja"
+    t.index ["usuario_token_identificacao"], name: "index_servicos_on_usuario_token_identificacao"
   end
 
   create_table "sessaos", force: :cascade do |t|
@@ -325,8 +351,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_24_151235) do
   add_foreign_key "historico_estoques", "usuarios", column: "usuario_token_identificacao", primary_key: "token_identificacao", on_delete: :nullify
   add_foreign_key "item_vendas", "estoque_de_produtos"
   add_foreign_key "item_vendas", "vendas"
+  add_foreign_key "materiais_servico", "estoque_de_produtos"
+  add_foreign_key "materiais_servico", "servicos"
   add_foreign_key "nota_fiscals", "informacao_lojas"
   add_foreign_key "nota_fiscals", "vendas"
+  add_foreign_key "servicos", "categorias"
+  add_foreign_key "servicos", "funcionarios", column: "usuario_token_identificacao", primary_key: "usuario_token_identificacao"
+  add_foreign_key "servicos", "informacao_lojas", column: "token_integracao_loja", primary_key: "token_integracao"
   add_foreign_key "transacao_pagamentos", "assinaturas"
   add_foreign_key "vendas", "clientes"
   add_foreign_key "vendas", "sessaos"
