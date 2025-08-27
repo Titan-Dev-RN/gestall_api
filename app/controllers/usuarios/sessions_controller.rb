@@ -44,16 +44,28 @@ class Usuarios::SessionsController < Devise::SessionsController
   private
 
   def generate_jwt_token(user)
-    payload = {
-      sub: user.token_identificacao,
-      exp: 24.hours.from_now.to_i,
-      jti: SecureRandom.uuid,
-      user_data: {
-        email: user.email,
-        tipo_acesso: user.tipo_acesso,
-        token_integracao_loja: user.token_integracao_loja
+    if user.tipo_acesso == "super_admin"
+      payload = {
+        sub: user.token_identificacao,
+        jti: SecureRandom.uuid,
+        user_data: {
+          email: user.email,
+          tipo_acesso: user.tipo_acesso,
+          token_integracao_loja: user.token_integracao_loja
+        }
       }
-    }
+    else 
+      payload = {
+        sub: user.token_identificacao,
+        exp: 24.hours.from_now.to_i,
+        jti: SecureRandom.uuid,
+        user_data: {
+          email: user.email,
+          tipo_acesso: user.tipo_acesso,
+          token_integracao_loja: user.token_integracao_loja
+        }
+      }
+    end 
     
     raise "Chave JWT_SECRET_KEY ausente!" unless ENV['JWT_SECRET_KEY'].present?
     

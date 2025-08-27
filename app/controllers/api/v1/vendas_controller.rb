@@ -47,13 +47,23 @@ class Api::V1::VendasController < ApplicationController
     unless produto
       render json: { error: 'Produto não encontrado no estoque' }, status: :not_found and return
     end
-  
+    
+    quantidade_solicitada = params[:quantidade].to_i
+
+    if produto.quantidade_em_estoque < quantidade_solicitada
+      render json: { error: 'Quantidade solicitada excede o estoque disponível' }, status: :unprocessable_entity and return
+    end
+
     item_existente = @venda.itens_venda.find_by(estoque_de_produto_id: produto.id)
   
     if item_existente
       nova_quantidade = params[:quantidade].to_i
       desconto = params[:desconto].to_f || item_existente.desconto
       
+      if produto.quantidade_em_estoque < nova_quantidade
+        render json: { error: 'Quantidade total excede o estoque disponível' }, status: :unprocessable_entity and return
+      end
+
       item_existente.update(
         quantidade: nova_quantidade,
         desconto: desconto,
