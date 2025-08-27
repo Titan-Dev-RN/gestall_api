@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_24_151235) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -54,6 +54,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
     t.string "nome", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "ativo", default: true, null: false
   end
 
   create_table "clientes", force: :cascade do |t|
@@ -68,6 +69,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
     t.boolean "ativo", default: true
     t.string "informacao_loja_token"
     t.index ["informacao_loja_token"], name: "index_clientes_on_informacao_loja_token"
+  end
+
+  create_table "contas", force: :cascade do |t|
+    t.string "descricao"
+    t.string "destinatario"
+    t.string "tipo"
+    t.decimal "valor", precision: 10, scale: 2
+    t.bigint "categorias_id"
+    t.date "vencimento"
+    t.string "status"
+    t.string "observacao"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "token_integracao_loja"
+    t.index ["categorias_id"], name: "index_contas_on_categorias_id"
+    t.index ["token_integracao_loja"], name: "index_contas_on_token_integracao_loja"
   end
 
   create_table "estoque_de_produtos", force: :cascade do |t|
@@ -129,6 +146,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
     t.datetime "updated_at", null: false
     t.string "usuario_token_identificacao"
     t.string "informacao_loja_token"
+    t.string "status"
+    t.date "data_desativacao"
     t.index ["informacao_loja_token"], name: "index_funcionarios_on_informacao_loja_token"
     t.index ["usuario_token_identificacao"], name: "index_funcionarios_on_usuario_token_identificacao"
   end
@@ -165,6 +184,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
     t.string "token_integracao"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["token_integracao"], name: "index_informacao_lojas_on_token_integracao", unique: true
   end
 
   create_table "item_vendas", force: :cascade do |t|
@@ -296,6 +316,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
 
   add_foreign_key "assinaturas", "informacao_lojas"
   add_foreign_key "assinaturas", "planos"
+  add_foreign_key "contas", "categorias", column: "categorias_id"
+  add_foreign_key "contas", "informacao_lojas", column: "token_integracao_loja", primary_key: "token_integracao"
   add_foreign_key "estoque_de_produtos", "categorias", column: "categoria_do_produto"
   add_foreign_key "estoque_de_produtos", "fornecedors"
   add_foreign_key "funcionarios", "usuarios", column: "usuario_token_identificacao", primary_key: "token_identificacao", name: "fk_funcionarios_usuarios_on_token_identificacao"

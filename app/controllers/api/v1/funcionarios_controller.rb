@@ -71,7 +71,7 @@ class Api::V1::FuncionariosController < ApplicationController
         @funcionario.usuario.update!(ativo: false)
       end
       
-      @funcionario.update!(ativo: false, data_demissao: Date.current)
+      @funcionario.update!(status: 'desativado', data_desativacao: Date.current)
       head :no_content
     end
   end
