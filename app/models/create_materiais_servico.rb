@@ -1,2 +1,0 @@
-class CreateMateriaisServico < ApplicationRecord
-end

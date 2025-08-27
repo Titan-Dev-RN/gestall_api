@@ -1,0 +1,2 @@
+class MateriaisServico < ApplicationRecord
+end
