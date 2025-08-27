@@ -16,7 +16,8 @@ class Api::V1::ServicosController < ApplicationController
   # POST /servicos
   def create
     @servico = Servico.new(servico_params)
-
+    @servico.token_integracao_loja = @current_user.token_integracao_loja
+    
     if @servico.save
       render json: @servico, status: :created, location: @servico
     else
@@ -46,6 +47,6 @@ class Api::V1::ServicosController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def servico_params
-      params.fetch(:servico, {})
+      params.require(:servico).permit(:nome, :descricao, :valor, :categoria_id, :token_integracao_loja, :usuario_token_identificacao, :status)
     end
 end
