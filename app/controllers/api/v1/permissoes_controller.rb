@@ -1,8 +1,7 @@
 class Api::V1::PermissoesController < ApplicationController
-    before_action :verificar_admin
 
     def index
-        permissoes = Permissao.where(token_integracao_loja: current_user.token_integracao_loja)
+        permissoes = Permissao.where(token_integracao_loja: @current_user.token_integracao_loja)
         render json: permissoes
     end
 
@@ -11,7 +10,7 @@ class Api::V1::PermissoesController < ApplicationController
         usuario = Usuario.find_by(token_identificacao: params[:usuario_token])
         
         # Verifica se o usuário pertence ao mesmo tenant
-        if usuario.nil? || usuario.token_integracao_loja != current_user.token_integracao_loja
+        if usuario.nil? || usuario.token_integracao_loja != @current_user.token_integracao_loja
             render json: { error: 'Acesso negado' }, status: :forbidden
             return
         end
@@ -23,7 +22,7 @@ class Api::V1::PermissoesController < ApplicationController
         # Encontra todas as permissões de uma vez
         permissoes_encontradas = Permissao.where(
             nome: permissoes,
-            token_integracao_loja: current_user.token_integracao_loja
+            token_integracao_loja: @current_user.token_integracao_loja
         )
 
         # Prepara os registros para inserção em massa
@@ -54,7 +53,7 @@ class Api::V1::PermissoesController < ApplicationController
         usuario = Usuario.find_by(token_identificacao: params[:usuario_token])
         permissao = Permissao.find_by(nome: params[:permissao_nome])
 
-        if usuario.token_integracao_loja != current_user.token_integracao_loja
+        if usuario.token_integracao_loja != @current_user.token_integracao_loja
             render json: { error: 'Acesso negado' }, status: :forbidden
             return
         end
@@ -73,7 +72,7 @@ class Api::V1::PermissoesController < ApplicationController
         Rails.logger.info "Buscando permissões para o usuário com token: #{params[:usuario_token]}"
         usuario = Usuario.find_by(token_identificacao: params[:usuario_token])
         
-        if usuario.nil? || usuario.token_integracao_loja != current_user.token_integracao_loja
+        if usuario.nil? || usuario.token_integracao_loja != @current_user.token_integracao_loja
             render json: { error: 'Usuário não encontrado' }, status: :not_found
             return
         end
@@ -85,15 +84,18 @@ class Api::V1::PermissoesController < ApplicationController
         render json: permissoes.map { |up| up.permissao.slice(:nome, :descricao) }
     end
 
+    def minhas_permissoes
+        permissoes = UsuarioPermissao.where(
+            usuario_token_identificacao: @current_user.token_identificacao,
+            token_integracao_loja: @current_user.token_integracao_loja
+        ).includes(:permissao)
+
+        render json: permissoes.map { |up| up.permissao.slice(:nome, :descricao) }
+    end
     private
 
     def permissao_params
         params.require(:permissao).permit(:nome, :descricao)
     end
 
-    def verificar_admin
-        unless current_user.admin_loja? || current_user.super_admin?
-            render json: { error: 'Acesso negado' }, status: :forbidden
-        end
-    end
 end
