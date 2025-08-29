@@ -19,7 +19,7 @@ class Api::V1::ServicosController < ApplicationController
     @servico.token_integracao_loja = @current_user.token_integracao_loja
     
     if @servico.save
-      render json: @servico, status: :created, location: @servico
+      render json: @servico, status: :created
     else
       render json: @servico.errors, status: :unprocessable_entity
     end
@@ -36,13 +36,21 @@ class Api::V1::ServicosController < ApplicationController
 
   # DELETE /servicos/1
   def destroy
-    @servico.destroy!
+    @servico.update(status: false)
+
+    render json: { message: 'Serviço desativado com sucesso.' }, status: :ok
+  end
+
+  def ativar
+    @servico.update(status: true)
+
+    render json: { message: 'Serviço ativado com sucesso.' }, status: :ok
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_servico
-      @servico = Servico.find(params.expect(:id))
+      @servico = Servico.find(params[:id])
     end
 
     # Only allow a list of trusted parameters through.
