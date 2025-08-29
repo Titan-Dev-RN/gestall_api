@@ -35,3 +35,5 @@
 db/backups
 estrutura.txt
 .ruby-version
+
+db_schema_dump.txt

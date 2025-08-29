@@ -74,7 +74,7 @@ Acesse a aplicação em [http://localhost:3000](http://localhost:3000)
 
 ## Resumo de estrutura do BD
 ```bash
-bundle exec rails runner lib/uml.rb > estrutura.txt
+bundle exec rake db:dump_schema
 ```
 
 ## Comandos De task de migration e backup
