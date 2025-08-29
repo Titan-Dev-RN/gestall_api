@@ -52,7 +52,24 @@ class Api::V1::SessoesController < ApplicationController
 
   def show
     if @sessao
-      render json: @sessao.as_json(include: { vendas: { include: [:itens_venda, :cliente] } })
+      vendas = @sessao.vendas.includes(:itens_venda, :cliente)
+      total_vendas = vendas.sum { |venda| venda.itens_venda.sum(&:valor_total) }
+      quantidade_vendas = vendas.size
+
+      # Mapeia totais por forma de pagamento
+      totais_por_forma = vendas.group_by(&:forma_pagamento).transform_values do |vendas_fp|
+        vendas_fp.sum { |venda| venda.itens_venda.sum(&:valor_total) }
+      end
+
+      render json: @sessao.as_json(
+        include: { 
+          vendas: { include: [:itens_venda, :cliente] } 
+        }
+      ).merge(
+        total_vendas: total_vendas,
+        quantidade_vendas: quantidade_vendas,
+        totais_por_forma_pagamento: totais_por_forma
+      )
     else
       render json: { error: 'Sessão não encontrada' }, status: :not_found
     end
