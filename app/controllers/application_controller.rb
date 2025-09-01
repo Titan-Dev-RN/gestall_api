@@ -97,6 +97,14 @@ class ApplicationController < ActionController::API
       create: 'conta_cadastrar',
       update: 'conta_atualizar',
       destroy: 'conta_desativar',
+    },
+    servicos: {
+      index: 'servico_listar',
+      show: 'servico_listar',
+      create: 'servico_cadastrar',
+      update: 'servico_atualizar',
+      destroy: 'servico_desativar',
+      ativar: 'servico_ativar_desativar'
     }
   }.freeze
 
