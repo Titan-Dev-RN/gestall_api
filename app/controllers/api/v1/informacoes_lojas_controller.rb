@@ -100,7 +100,7 @@ class Api::V1::InformacoesLojasController < ApplicationController
   def loja_params
     params.require(:informacao_loja).permit(
       :nome_da_loja, :nome_dono, :forma_de_pagamento, :endereco,
-      :cidade, :estado, :cnpj, :telefone, :email, :plano_contratado,
+      :cidade, :estado, :cnpj, :telefone, :email, :plano_contratado, :cep, :inscricao_estadual,
       :data_vencimento_plano, usuario: [ :password, :password_confirmation ]
     )
   end
