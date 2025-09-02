@@ -1,0 +1,2 @@
+class Lote < ApplicationRecord
+end
