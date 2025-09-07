@@ -105,6 +105,11 @@ class ApplicationController < ActionController::API
       update: 'servico_atualizar',
       destroy: 'servico_desativar',
       ativar: 'servico_ativar_desativar'
+    },
+    usuarios: {
+      index: 'super_admin',
+      usuario_by_email: 'super_admin',
+      create: 'super_admin'
     }
   }.freeze
 
