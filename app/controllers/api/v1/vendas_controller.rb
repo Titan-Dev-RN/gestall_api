@@ -4,7 +4,7 @@ class Api::V1::VendasController < ApplicationController
 
   def index
     @vendas = vendas_loja(@current_user.token_identificacao)
-    render json: @vendas, include: [:itens_venda, :cliente]
+    render json: @vendas, include: [:itens_venda, :cliente, :usuario_token_identificacao]
   end
     
   def show
@@ -14,7 +14,8 @@ class Api::V1::VendasController < ApplicationController
   def index_all
     loja = InformacaoLoja.find_by(token_integracao: @current_user.token_integracao_loja)
     @vendas = Venda.where(informacao_loja_token: loja.token_integracao)
-    render json: @vendas, include: [:itens_venda, :cliente]
+    Rails.logger.info " todas as#{@vendas}"
+    render json: @vendas
   end
 
   def create
@@ -194,7 +195,7 @@ class Api::V1::VendasController < ApplicationController
 
   def venda_params
     params.require(:venda).permit(
-      :cliente_id, :valor_total, :forma_pagamento,
+      :cliente_id, :valor_total, :forma_pagamento, :usuario_token_identificacao,
       itens_venda: [:produto_id, :quantidade, :preco_unitario]
     )
   end
