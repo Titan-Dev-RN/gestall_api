@@ -58,6 +58,6 @@ class Api::V1::ServicosController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def servico_params
-      params.require(:servico).permit(:nome, :descricao, :valor, :categoria_id, :token_integracao_loja, :usuario_token_identificacao, :status)
+      params.require(:servico).permit(:nome, :descricao, :valor, :categoria_id, :token_integracao_loja, :usuario_token_identificacao, :status, :duracao, :funcionario_id)
     end
 end
