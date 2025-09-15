@@ -110,6 +110,9 @@ class ApplicationController < ActionController::API
       index: 'super_admin',
       usuario_by_email: 'super_admin',
       create: 'super_admin'
+    },
+    movimentacoes: {
+      index: 'movimentacao_listar'
     }
   }.freeze
 

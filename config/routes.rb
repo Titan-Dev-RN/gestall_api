@@ -112,6 +112,8 @@ Rails.application.routes.draw do
 
       resources :lotes
 
+      resources :movimentacoes, only: [:index]
+      
       namespace :admin_super do
         resources :informacoes_lojas 
         resources :usuarios
