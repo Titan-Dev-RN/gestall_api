@@ -62,6 +62,20 @@ JWT_SECRET=
 JWT_SECRET_KEY=
 ```
 
+anexe suas informações de banco de dados suas credenciais do banco de dados conforme exemplo:
+
+- exemplo de versão final (também disponível no [example.env](example.env))
+```yaml
+JWT_KEY=###################...
+JWT_SECRET=################...
+JWT_SECRET_KEY=############...
+GESTALL_DB_NAME=postgres
+GESTALL_DB_USERNAME=gabriel
+GESTALL_DB_PASSWORD=0000
+GESTALL_DB_HOST=localhost
+GESTALL_DB_PORT=5432
+```
+
 5. **Inicie o servidor:**
 
 ```bash
