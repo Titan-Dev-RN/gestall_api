@@ -187,7 +187,7 @@ class Api::V1::ProdutosController < ApplicationController
     params.require(:produto).permit(
       :nome_do_produto, :categoria_do_produto, :tipo_do_produto,
       :quantidade_em_estoque, :quantidade_minima, :quantidade_maxima,
-      :preco_de_venda, :codigo_barras, :codigo_interno,
+      :preco_de_venda, :codigo_barras, :codigo_interno, :lote_id,
       :unidade_medida, :peso, :marca, :fornecedor_id, :ativo,
     )
   end

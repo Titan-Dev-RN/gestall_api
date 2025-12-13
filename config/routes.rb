@@ -15,9 +15,11 @@ Rails.application.routes.draw do
       registration: 'cadastro'
     }
 
-  # Rotas adicionais de usuários
-  resources :usuarios, only: [:index, :create]
-
+  resources :usuarios, only: [:index, :create] do
+    collection do
+      get 'usuario_by_email', to: 'usuarios#usuario_by_email', as: :usuario_by_email
+    end
+  end
   
 
   namespace :api do
@@ -100,7 +102,15 @@ Rails.application.routes.draw do
 
       resources :contas
       
-      resources :servicos
+      resources :servicos do
+        member do
+          post 'ativar'
+        end
+      end
+
+      resources :lotes
+
+      resources :movimentacoes, only: [:index]
       
       namespace :admin_super do
         resources :informacoes_lojas 

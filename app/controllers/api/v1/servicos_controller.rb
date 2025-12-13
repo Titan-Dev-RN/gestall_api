@@ -1,5 +1,5 @@
 class Api::V1::ServicosController < ApplicationController
-  before_action :set_servico, only: %i[ show update destroy ]
+  before_action :set_servico, only: %i[ show update destroy ativar]
 
   # GET /servicos
   def index
@@ -50,11 +50,14 @@ class Api::V1::ServicosController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_servico
-      @servico = Servico.find(params[:id])
+      if @servico = Servico.find(params[:id])
+      else
+        render json: { error: 'Serviço não encontrado.' }, status: :not_found
+      end
     end
 
     # Only allow a list of trusted parameters through.
     def servico_params
-      params.require(:servico).permit(:nome, :descricao, :valor, :categoria_id, :token_integracao_loja, :usuario_token_identificacao, :status)
+      params.require(:servico).permit(:nome, :descricao, :valor, :categoria_id, :token_integracao_loja, :usuario_token_identificacao, :status, :duracao, :funcionario_id)
     end
 end
