@@ -11,7 +11,15 @@ class Venda < ApplicationRecord
   audited associated_with: :informacao_loja
   has_associated_audits #:itens_venda, :estoque_de_produtos, :nota_fiscal
 
+  validates :data_venda, presence: true
+  validates :valor_total, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :status, presence: true
+  validates :forma_pagamento, presence: true
+  validates :usuario_token_identificacao, presence: true
+  validates :informacao_loja_token, presence: true
+
   validate :sessao_pertence_ao_usuario
+
 
   private 
 

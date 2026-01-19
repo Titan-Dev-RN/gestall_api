@@ -6,4 +6,5 @@ class Fornecedor < ApplicationRecord
   audited associated_with: :informacao_loja
   has_associated_audits #:estoque_produtos
   
+  validates :nome, presence: true
 end

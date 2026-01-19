@@ -6,4 +6,7 @@ class Funcionario < ApplicationRecord
 
   audited associated_with: :informacao_loja
   has_associated_audits #:vendas
+
+  validates :nome, presence: true
+  
 end
