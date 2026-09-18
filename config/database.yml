@@ -15,8 +15,8 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  username: <%= ENV.fetch("GESTALL_DB_USERNAME", "root") %>
-  password: <%= ENV.fetch("GESTALL_DB_PASSWORD", "") %>
+  username: "<%= ENV.fetch("GESTALL_DB_USERNAME", "root") %>"
+  password: "<%= ENV.fetch("GESTALL_DB_PASSWORD", "") %>"
   host: <%= ENV.fetch("GESTALL_DB_HOST", "localhost") %>
   port: <%= Integer(ENV.fetch("GESTALL_DB_PORT", "5432")) %>
   # For details on connection pooling, see Rails configuration guide
@@ -87,7 +87,7 @@ production:
     <<: *default
     database: gestall_api_production
     username: gestall_api
-    password: <%= ENV["GESTALL_API_DATABASE_PASSWORD"] %>
+    password: "<%= ENV["GESTALL_API_DATABASE_PASSWORD"] %>"
   cache:
     <<: *primary_production
     database: gestall_api_production_cache
