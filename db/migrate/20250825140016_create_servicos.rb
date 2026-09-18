@@ -1,11 +1,11 @@
 class CreateServicos < ActiveRecord::Migration[8.0]
   def change
-    remove_index :funcionarios, :usuario_token_identificacao if index_exists?(:funcionarios, :usuario_token_identificacao)
+    unless table_exists?(:servicos)
+      remove_index :funcionarios, :usuario_token_identificacao if index_exists?(:funcionarios, :usuario_token_identificacao)
+      add_index :funcionarios, :usuario_token_identificacao, unique: true unless index_exists?(:funcionarios, :usuario_token_identificacao)
+    end
 
-    # Adicionar o índice único
-    add_index :funcionarios, :usuario_token_identificacao, unique: true
-
-    create_table :servicos do |t|
+    create_table :servicos, if_not_exists: true do |t|
       t.string :nome
       t.text :descricao
       t.integer :valor
@@ -20,12 +20,7 @@ class CreateServicos < ActiveRecord::Migration[8.0]
       t.index :usuario_token_identificacao
     end
 
-    add_foreign_key :servicos, :informacao_lojas, 
-                   column: :token_integracao_loja, 
-                   primary_key: :token_integracao
-
-    add_foreign_key :servicos, :funcionarios, 
-                   column: :usuario_token_identificacao, 
-                   primary_key: :usuario_token_identificacao
+    add_foreign_key :servicos, :informacao_lojas, column: :token_integracao_loja, primary_key: :token_integracao unless foreign_key_exists?(:servicos, :informacao_lojas, column: :token_integracao_loja)
+    add_foreign_key :servicos, :funcionarios, column: :usuario_token_identificacao, primary_key: :usuario_token_identificacao unless foreign_key_exists?(:servicos, :funcionarios, column: :usuario_token_identificacao)
   end
 end

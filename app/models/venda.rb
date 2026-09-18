@@ -1,7 +1,7 @@
 class Venda < ApplicationRecord
-  belongs_to :informacao_loja
-  belongs_to :cliente, :optional => true
-  belongs_to :usuario
+  belongs_to :informacao_loja, foreign_key: :informacao_loja_token, primary_key: :token_integracao
+  belongs_to :cliente, optional: true
+  belongs_to :usuario, foreign_key: :usuario_token_identificacao, primary_key: :token_identificacao
   belongs_to :sessao, optional: true
 
   has_many :itens_venda, :class_name => 'ItemVenda', foreign_key: 'venda_id'
@@ -14,7 +14,7 @@ class Venda < ApplicationRecord
   validates :data_venda, presence: true
   validates :valor_total, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :status, presence: true
-  validates :forma_pagamento, presence: true
+  validates :forma_pagamento, presence: true, if: -> { status == 'finalizada' }
   validates :usuario_token_identificacao, presence: true
   validates :informacao_loja_token, presence: true
 

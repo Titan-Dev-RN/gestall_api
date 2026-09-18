@@ -79,17 +79,17 @@ class Api::V1::FuncionariosController < ApplicationController
   private
 
   def create_in_tenant_db
-    # Switch to tenant DB
     tenant_config = current_tenant_db_config
     ActiveRecord::Base.establish_connection(tenant_config)
 
-     # Critério de unicidade (coloquei email)
-  if Funcionario.exists?(email: funcionario_params[:email])
-    return { success: true, funcionario: Funcionario.find_by(email: funcionario_params[:email]) }
-  end
+    # Retorna o existente se já foi criado com este email (evita duplicatas)
+    email = params[:funcionario][:email]
+    if email.present? && Funcionario.exists?(email: email)
+      return { success: true, funcionario: Funcionario.find_by(email: email) }
+    end
 
     funcionario = Funcionario.new(
-      funcionario_params.except(:criar_usuario, :email, :password)
+      funcionario_params.except(:criar_usuario, :password)
     )
     funcionario.attributes = {
       informacao_loja_token: current_tenant.token_integracao,
@@ -98,11 +98,6 @@ class Api::V1::FuncionariosController < ApplicationController
     }
 
     if funcionario.save
-      # Verificação explícita de persistência
-      unless Funcionario.exists?(funcionario.id)
-        return { success: false, error: "Funcionário não persistido no banco tenant" }
-      end
-      
       { success: true, funcionario: funcionario }
     else
       { success: false, error: funcionario.errors.full_messages.to_sentence }
@@ -152,20 +147,23 @@ class Api::V1::FuncionariosController < ApplicationController
       id_funcionario: funcionario.id
     )
 
-    # 2. Depois cria no tenant database
+    # 2. Depois cria no tenant database (apenas se ainda não existir,
+    #    evita duplicação quando tenant e banco principal são o mesmo)
     ActiveRecord::Base.establish_connection(current_tenant_db_config)
-    tenant_user = Usuario.create!(
-      nome: funcionario.nome,
-      email: email,
-      password: password,
-      password_confirmation: password,
-      role: 'funcionario',
-      tipo_acesso: 'funcionario',
-      ativo: true,
-      token_integracao_loja: current_tenant.token_integracao,
-      token_identificacao: token_identificacao, # Mesmo valor aqui
-      id_funcionario: funcionario.id
-    )
+    unless Usuario.exists?(token_identificacao: token_identificacao)
+      tenant_user = Usuario.create!(
+        nome: funcionario.nome,
+        email: email,
+        password: password,
+        password_confirmation: password,
+        role: 'funcionario',
+        tipo_acesso: 'funcionario',
+        ativo: true,
+        token_integracao_loja: current_tenant.token_integracao,
+        token_identificacao: token_identificacao,
+        id_funcionario: funcionario.id
+      )
+    end
 
     # 3. ATUALIZAÇÃO CORRETA - usa usuario_token_identificacao que referencia token_identificacao
     funcionario.update!(

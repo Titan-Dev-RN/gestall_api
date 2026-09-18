@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_16_163105) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -108,8 +108,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
     t.datetime "updated_at", null: false
     t.bigint "categoria_do_produto"
     t.string "informacao_loja_token"
+    t.bigint "lote_id"
     t.index ["fornecedor_id"], name: "index_estoque_de_produtos_on_fornecedor_id"
     t.index ["informacao_loja_token"], name: "index_estoque_de_produtos_on_informacao_loja_token"
+    t.index ["lote_id"], name: "index_estoque_de_produtos_on_lote_id"
   end
 
   create_table "fornecedors", force: :cascade do |t|
@@ -184,6 +186,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
     t.string "token_integracao"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "cep"
+    t.string "inscricao_estadual"
     t.index ["token_integracao"], name: "index_informacao_lojas_on_token_integracao", unique: true
   end
 
@@ -198,6 +202,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
     t.datetime "updated_at", null: false
     t.index ["estoque_de_produto_id"], name: "index_item_vendas_on_estoque_de_produto_id"
     t.index ["venda_id"], name: "index_item_vendas_on_venda_id"
+  end
+
+  create_table "lotes", force: :cascade do |t|
+    t.string "nome"
+    t.date "validade"
+    t.date "data_entrada"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "status"
+    t.string "codigo"
   end
 
   create_table "materiais_servico", force: :cascade do |t|
@@ -255,7 +269,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
     t.boolean "status", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "duracao"
+    t.bigint "funcionario_id"
     t.index ["categoria_id"], name: "index_servicos_on_categoria_id"
+    t.index ["funcionario_id"], name: "index_servicos_on_funcionario_id"
     t.index ["token_integracao_loja"], name: "index_servicos_on_token_integracao_loja"
     t.index ["usuario_token_identificacao"], name: "index_servicos_on_usuario_token_identificacao"
   end
@@ -346,6 +363,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_04_125914) do
   add_foreign_key "contas", "informacao_lojas", column: "token_integracao_loja", primary_key: "token_integracao"
   add_foreign_key "estoque_de_produtos", "categorias", column: "categoria_do_produto"
   add_foreign_key "estoque_de_produtos", "fornecedors"
+  add_foreign_key "estoque_de_produtos", "lotes"
   add_foreign_key "funcionarios", "usuarios", column: "usuario_token_identificacao", primary_key: "token_identificacao", name: "fk_funcionarios_usuarios_on_token_identificacao"
   add_foreign_key "historico_estoques", "estoque_de_produtos"
   add_foreign_key "historico_estoques", "usuarios", column: "usuario_token_identificacao", primary_key: "token_identificacao", on_delete: :nullify

@@ -1,6 +1,6 @@
 class CreateContas < ActiveRecord::Migration[8.0]
   def change
-    create_table :contas do |t|
+    create_table :contas, if_not_exists: true do |t|
       t.string :descricao
       t.string :destinatario
       t.string :tipo
