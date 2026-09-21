@@ -86,8 +86,8 @@ production:
   primary: &primary_production
     <<: *default
     database: gestall_api_production
-    username: gestall_api
-    password: "<%= ENV["GESTALL_API_DATABASE_PASSWORD"] %>"
+    username: "<%= ENV.fetch("GESTALL_DB_USERNAME", "gestall_api") %>"
+    password: "<%= ENV["GESTALL_API_DATABASE_PASSWORD"] || ENV["GESTALL_DB_PASSWORD"] %>"
   cache:
     <<: *primary_production
     database: gestall_api_production_cache
